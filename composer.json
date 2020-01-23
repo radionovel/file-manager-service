@@ -1,0 +1,16 @@
+{
+    "name": "radionovel/file-manager",
+    "license": "Free",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Andrey Radionov",
+            "email": "a.radionov@animarender.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "^8"
+    }
+}

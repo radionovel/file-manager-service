@@ -1,16 +1,24 @@
 {
-    "name": "radionovel/file-manager",
-    "license": "Free",
-    "type": "project",
-    "authors": [
-        {
-            "name": "Andrey Radionov",
-            "email": "a.radionov@animarender.com"
-        }
-    ],
-    "minimum-stability": "stable",
-    "require": {},
-    "require-dev": {
-        "phpunit/phpunit": "^8"
+  "name": "radionovel/file-manager",
+  "license": "Free",
+  "type": "project",
+  "authors": [
+    {
+      "name": "Andrey Radionov",
+      "email": "a.radionov@animarender.com"
     }
+  ],
+  "minimum-stability": "stable",
+  "autoload": {
+    "psr-4": {
+      "FileManager\\": "src"
+    }
+  },
+  "require": {},
+  "require-dev": {
+    "phpunit/phpunit": "^8"
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit"
+  }
 }

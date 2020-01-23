@@ -3,17 +3,21 @@
 namespace FileManager\Providers;
 
 use FileManager\Exceptions\InvalidPathException;
+use FileManager\Exceptions\PathNotExistsException;
 use FileManager\FsObjects\DirectoryObject;
 use FileManager\FsObjects\FileObject;
+use FileManager\Interfaces\FileSystemProviderInterface;
 use FileManager\Traits\PathUtils;
+use FileManager\Traits\UseDownloader;
+use FileManager\Traits\UseUploader;
 
 /**
  * Class FileSystemProvider
  * @package Providers
  */
-class FileSystemProvider
+class FileSystemFileSystemProvider implements FileSystemProviderInterface
 {
-    use PathUtils;
+    use PathUtils, UseDownloader, UseUploader;
     /**
      * @var string
      */
@@ -39,25 +43,39 @@ class FileSystemProvider
     /**
      * @param $path
      * @return string
+     * @throws PathNotExistsException
      * @throws InvalidPathException
      */
-    public function getValidPath($path)
+    protected function getValidPath($path)
     {
-        $path = $this->getBasePath() . DIRECTORY_SEPARATOR . $this->sanitize($path);
-        $path = $this->realPath($path);
-
-        if (strpos($path, $this->getBasePath()) !== 0) {
+        $path = $this->makeFullPath($path);
+        $real_path = $this->realPath($path);
+        if (strpos($real_path, $this->getBasePath()) !== 0) {
             throw new InvalidPathException(
-                sprintf('Path %s is not valid', $path)
+                sprintf('Path %s is not valid', $real_path)
             );
         }
+        return $real_path;
+    }
 
-        return $path;
+    /**
+     * @param $path
+     * @return string
+     * @throws InvalidPathException
+     */
+    private function makeFullPath($path)
+    {
+        $full_path = $this->getBasePath() . DIRECTORY_SEPARATOR . $this->sanitize($path);
+        if (strpos($full_path, '/..') !== false) {
+            throw new InvalidPathException();
+        }
+        return $full_path;
     }
 
     /**
      * @param $path
      * @return array
+     * @throws PathNotExistsException
      * @throws InvalidPathException
      */
     public function listing($path)
@@ -66,15 +84,14 @@ class FileSystemProvider
         $items = scandir($path);
         $result = [];
         foreach ($items as $item) {
-
             if (in_array($item, ['.', '..'])) {
                 continue;
             }
             $item_path = $path . DIRECTORY_SEPARATOR . $item;
             if (is_dir($item_path)) {
-                $result[] = new DirectoryObject($item);
+                $result[] = new DirectoryObject($item_path);
             } else {
-                $result[] = new FileObject($item);
+                $result[] = new FileObject($item_path);
             }
         }
         return $result;
@@ -83,22 +100,27 @@ class FileSystemProvider
     /**
      * @param $path
      * @return bool
-     * @throws InvalidPathException
      */
     public function mkdir($path)
     {
-        $path = $this->getValidPath($path);
+        try {
+            $path = $this->makeFullPath($path);
+        } catch (InvalidPathException $exception) {
+            return false;
+        }
         $command = escapeshellcmd(
             sprintf('mkdir -p %s', $path)
         );
         system($command, $exit_code);
         return $exit_code === 0;
+
     }
 
     /**
      * @param $path
      * @return bool
      * @throws InvalidPathException
+     * @throws PathNotExistsException
      */
     public function delete($path)
     {
@@ -115,26 +137,27 @@ class FileSystemProvider
      * @param $destination
      * @return bool
      * @throws InvalidPathException
+     * @throws PathNotExistsException
      */
     public function move($source, $destination)
     {
         $source = $this->getValidPath($source);
         $destination = $this->getValidPath($destination);
-        $command = escapeshellcmd(
-            sprintf('mv -f %s %s', $source, $destination)
-        );
-        system($command, $exit_code);
-        return $exit_code === 0;
+        $destination = $destination . DIRECTORY_SEPARATOR . basename($source);
+        return rename($source, $destination);
     }
 
     /**
      * @param $path
      * @return bool
-     * @throws InvalidPathException
      */
     public function exists($path)
     {
-        $path = $this->getValidPath($path);
-        return is_dir($path) || file_exists($path);
+        try {
+            $this->getValidPath($path);
+        } catch (\Exception $exception) {
+            return false;
+        }
+        return true;
     }
 }

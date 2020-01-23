@@ -1,16 +1,27 @@
 <?php
 
-namespace FileManager\Providers;
+namespace FileManager\Interfaces;
 
 /**
  * Interface ProviderInterface
  * @package FileManager\Providers
  */
-interface ProviderInterface
+interface FileSystemProviderInterface
 {
-//    public function download($item);
-//    public function upload($item_fs);
-//    public function extract($path);
+
+    /**
+     * Download file thought external downloader
+     * @param $file
+     * @return mixed
+     */
+    public function download($file);
+
+    /**
+     * Upload filer thought external uploader
+     * @param $files
+     * @return mixed
+     */
+    public function upload($files);
 
     /**
      * Create directory
@@ -27,26 +38,12 @@ interface ProviderInterface
     public function delete($path);
 
     /**
-     * Check directory has one files
-     * @param $path
-     * @return mixed
-     */
-    public function is_empty($path);
-
-    /**
      * Move directory or file
      * @param $source
      * @param $destination
      * @return mixed
      */
     public function move($source, $destination);
-
-    /**
-     * Search files and directories
-     * @param $query
-     * @return mixed
-     */
-    public function search($query);
 
     /**
      * Get listing of directory

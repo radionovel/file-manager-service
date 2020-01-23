@@ -3,13 +3,14 @@
 
 namespace FileManager\Exceptions;
 
+use Exception;
 use Throwable;
 
 /**
  * Class InvalidPathException
  * @package FileManager\Exceptions
  */
-class InvalidPathException extends \Exception
+class InvalidPathException extends Exception
 {
     /**
      * InvalidPathException constructor.

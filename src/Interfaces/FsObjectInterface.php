@@ -1,6 +1,6 @@
 <?php
 
-namespace FileManager\FsObjects;
+namespace FileManager\Interfaces;
 
 /**
  * Interface FileInterface

@@ -2,30 +2,23 @@
 
 namespace FileManager\FsObjects;
 
+use FileManager\Interfaces\FsObjectInterface;
+
 /**
  * Class FileObject
  * @package FileManager\FsObjects
  */
-class FileObject implements FsObjectInterface {
-    /**
-     * @var string
-     */
-    private $name;
+class FileObject extends AbstractFsObject implements FsObjectInterface
+{
+    public const TYPE = 'file';
 
     /**
-     * FileObject constructor.
-     * @param string $name
-     */
-    public function __construct($name)
-    {
-        $this->name = $name;
-    }
-
-    /**
-     * @return mixed|null
+     * @return array
      */
     public function info()
     {
-        // TODO: Implement info() method.
+        return parent::info() + [
+                'extension' => pathinfo($this->getName(), PATHINFO_EXTENSION),
+            ];
     }
 }

@@ -27,12 +27,12 @@ trait PathUtils {
      */
     public function realPath($path)
     {
-        $path = realpath($path);
-        if ($path === false) {
+        $real_path = realpath($path);
+        if ($real_path === false) {
             throw new PathNotExistsException(
                 sprintf('Path %s not exists', $path)
             );
         }
-        return $path;
+        return $real_path;
     }
 }

@@ -7,10 +7,10 @@ use Exception;
 use Throwable;
 
 /**
- * Class PathNotExistsException
+ * Class InvalidPathException
  * @package FileManager\Exceptions
  */
-class PathNotExistsException extends Exception
+class DownloaderIsNullException extends Exception
 {
     /**
      * InvalidPathException constructor.

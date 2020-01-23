@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="File-Manager" default="sonar" basedir="." xmlns:sonar="antlib:org.sonar.ant">
-
+    <property environment="env"/>
     <!-- Define the SonarQube global properties (the most usual way is to pass these properties via the command line) -->
-    <property name="sonar.host.url" value="http://localhost:9000" />
+    <property name="sonar.host.url" value="${env.SONAR_SERVER}" />
 
     <!-- Define the SonarQube project properties -->
     <property name="sonar.projectKey" value="file-manager" />
@@ -10,7 +10,7 @@
     <property name="sonar.projectName" value="file-manager" />
     <property name="sonar.projectVersion" value="1.0" />
     <property name="sonar.sources" value="src" />
-    <property name="sonar.php.coverage.reportPaths" value="coverage" />
+    <property name="sonar.php.coverage.reportPaths" value="${env.COVERAGE_PATH}" />
 
     <target name="sonar">
         <taskdef uri="antlib:org.sonar.ant" resource="org/sonar/ant/antlib.xml">

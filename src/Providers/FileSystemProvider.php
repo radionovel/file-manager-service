@@ -2,6 +2,7 @@
 
 namespace FileManager\Providers;
 
+use FileManager\Exceptions\InvalidPathException;
 use FileManager\FsObjects\DirectoryObject;
 use FileManager\FsObjects\FileObject;
 use FileManager\Traits\PathUtils;
@@ -38,14 +39,17 @@ class FileSystemProvider
     /**
      * @param $path
      * @return string
+     * @throws InvalidPathException
      */
     public function getValidPath($path)
     {
         $path = $this->getBasePath() . DIRECTORY_SEPARATOR . $this->sanitize($path);
         $path = $this->realPath($path);
 
-        if ($path === false || strpos($path, $this->getBasePath()) !== 0) {
-            throw new \RuntimeException('Error');
+        if (strpos($path, $this->getBasePath()) !== 0) {
+            throw new InvalidPathException(
+                sprintf('Path %s is not valid', $path)
+            );
         }
 
         return $path;
@@ -54,6 +58,7 @@ class FileSystemProvider
     /**
      * @param $path
      * @return array
+     * @throws InvalidPathException
      */
     public function listing($path)
     {
@@ -78,6 +83,7 @@ class FileSystemProvider
     /**
      * @param $path
      * @return bool
+     * @throws InvalidPathException
      */
     public function mkdir($path)
     {
@@ -92,6 +98,7 @@ class FileSystemProvider
     /**
      * @param $path
      * @return bool
+     * @throws InvalidPathException
      */
     public function delete($path)
     {
@@ -107,6 +114,7 @@ class FileSystemProvider
      * @param $source
      * @param $destination
      * @return bool
+     * @throws InvalidPathException
      */
     public function move($source, $destination)
     {
@@ -122,6 +130,7 @@ class FileSystemProvider
     /**
      * @param $path
      * @return bool
+     * @throws InvalidPathException
      */
     public function exists($path)
     {

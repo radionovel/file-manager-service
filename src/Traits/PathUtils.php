@@ -2,6 +2,9 @@
 
 namespace FileManager\Traits;
 
+use FileManager\Exceptions\InvalidPathException;
+use FileManager\Exceptions\PathNotExistsException;
+
 /**
  * Trait PathUtils
  * @package FileManager\Traits
@@ -19,13 +22,16 @@ trait PathUtils {
 
     /**
      * @param $path
-     * @return false|\RuntimeException|string
+     * @return string
+     * @throws PathNotExistsException
      */
     public function realPath($path)
     {
         $path = realpath($path);
         if ($path === false) {
-            return new \RuntimeException('Path not exists');
+            throw new PathNotExistsException(
+                sprintf('Path %s not exists', $path)
+            );
         }
         return $path;
     }

@@ -10,6 +10,7 @@
     <property name="sonar.projectName" value="file-manager" />
     <property name="sonar.projectVersion" value="1.0" />
     <property name="sonar.sources" value="src" />
+    <property name="sonar.php.coverage.reportPaths" value="coverage" />
 
     <target name="sonar">
         <taskdef uri="antlib:org.sonar.ant" resource="org/sonar/ant/antlib.xml">

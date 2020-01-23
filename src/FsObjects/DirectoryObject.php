@@ -1,8 +1,8 @@
 <?php
 
-namespace FileManager\FsObjects;
+namespace Radionovel\FileManagerService\FsObjects;
 
-use FileManager\Interfaces\FsObjectInterface;
+use Radionovel\FileManagerService\Interfaces\FsObjectInterface;
 
 /**
  * Class DirectoryObject

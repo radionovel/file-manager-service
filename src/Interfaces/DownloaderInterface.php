@@ -1,6 +1,6 @@
 <?php
 
-namespace FileManager\Interfaces;
+namespace Radionovel\FileManagerService\Interfaces;
 
 /**
  * Interface DownloaderInterface

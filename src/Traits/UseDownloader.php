@@ -1,8 +1,8 @@
 <?php
-namespace FileManager\Traits;
+namespace Radionovel\FileManagerService\Traits;
 
-use FileManager\Interfaces\DownloaderInterface;
-use FileManager\Exceptions\DownloaderIsNullException;
+use Radionovel\FileManagerService\Interfaces\DownloaderInterface;
+use Radionovel\FileManagerService\Exceptions\DownloaderIsNullException;
 
 /**
  * Trait UseDownloader

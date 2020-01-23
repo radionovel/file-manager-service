@@ -1,6 +1,6 @@
 <?php
 
-namespace FileManager\FsObjects;
+namespace Radionovel\FileManagerService\FsObjects;
 
 /**
  * Class AbstractFsObject

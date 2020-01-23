@@ -1,17 +1,18 @@
 {
-  "name": "radionovel/file-manager",
-  "license": "Free",
-  "type": "project",
+  "name": "radionovel/file-manager-service",
+  "license": "",
+  "type": "library",
+  "description": "",
   "authors": [
     {
       "name": "Andrey Radionov",
       "email": "a.radionov@animarender.com"
     }
   ],
-  "minimum-stability": "stable",
+  "minimum-stability": "dev",
   "autoload": {
     "psr-4": {
-      "FileManager\\": "src"
+      "Radionovel\\FileManager\\": "src"
     }
   },
   "require": {},

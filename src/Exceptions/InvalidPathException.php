@@ -1,7 +1,7 @@
 <?php
 
 
-namespace FileManager\Exceptions;
+namespace Radionovel\FileManagerService\Exceptions;
 
 use Exception;
 use Throwable;

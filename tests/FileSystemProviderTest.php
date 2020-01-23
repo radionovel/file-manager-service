@@ -1,15 +1,15 @@
 <?php
 
-use FileManager\Interfaces\DownloaderInterface;
-use FileManager\Exceptions\DownloaderIsNullException;
-use FileManager\Exceptions\InvalidPathException;
-use FileManager\Exceptions\PathNotExistsException;
-use FileManager\Exceptions\UploaderIsNullException;
-use FileManager\FsObjects\DirectoryObject;
-use FileManager\FsObjects\FileObject;
-use FileManager\Interfaces\FsObjectInterface;
-use FileManager\Providers\FileSystemFileSystemProvider;
-use FileManager\Interfaces\UploaderInterface;
+use Radionovel\FileManagerService\Interfaces\DownloaderInterface;
+use Radionovel\FileManagerService\Exceptions\DownloaderIsNullException;
+use Radionovel\FileManagerService\Exceptions\InvalidPathException;
+use Radionovel\FileManagerService\Exceptions\PathNotExistsException;
+use Radionovel\FileManagerService\Exceptions\UploaderIsNullException;
+use Radionovel\FileManagerService\FsObjects\DirectoryObject;
+use Radionovel\FileManagerService\FsObjects\FileObject;
+use Radionovel\FileManagerService\Interfaces\FsObjectInterface;
+use Radionovel\FileManagerService\Providers\FileSystemFileSystemProvider;
+use Radionovel\FileManagerService\Interfaces\UploaderInterface;
 use PHPUnit\Framework\TestCase;
 
 class FileSystemProviderTest extends TestCase

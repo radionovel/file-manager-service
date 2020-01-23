@@ -1,15 +1,15 @@
 <?php
 
-namespace FileManager\Providers;
+namespace Radionovel\FileManagerService\Providers;
 
-use FileManager\Exceptions\InvalidPathException;
-use FileManager\Exceptions\PathNotExistsException;
-use FileManager\FsObjects\DirectoryObject;
-use FileManager\FsObjects\FileObject;
-use FileManager\Interfaces\FileSystemProviderInterface;
-use FileManager\Traits\PathUtils;
-use FileManager\Traits\UseDownloader;
-use FileManager\Traits\UseUploader;
+use Radionovel\FileManagerService\Exceptions\InvalidPathException;
+use Radionovel\FileManagerService\Exceptions\PathNotExistsException;
+use Radionovel\FileManagerService\FsObjects\DirectoryObject;
+use Radionovel\FileManagerService\FsObjects\FileObject;
+use Radionovel\FileManagerService\Interfaces\FileSystemProviderInterface;
+use Radionovel\FileManagerService\Traits\PathUtils;
+use Radionovel\FileManagerService\Traits\UseDownloader;
+use Radionovel\FileManagerService\Traits\UseUploader;
 
 /**
  * Class FileSystemProvider

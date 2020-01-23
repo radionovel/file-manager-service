@@ -1,9 +1,9 @@
 <?php
 
-namespace FileManager\Traits;
+namespace Radionovel\FileManagerService\Traits;
 
-use FileManager\Exceptions\InvalidPathException;
-use FileManager\Exceptions\PathNotExistsException;
+use Radionovel\FileManagerService\Exceptions\InvalidPathException;
+use Radionovel\FileManagerService\Exceptions\PathNotExistsException;
 
 /**
  * Trait PathUtils

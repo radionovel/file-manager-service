@@ -1,7 +1,7 @@
 <?php
 
 
-namespace FileManager\Interfaces;
+namespace Radionovel\FileManagerService\Interfaces;
 
 /**
  * Class UploaderInterface

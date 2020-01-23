@@ -1,8 +1,8 @@
 <?php
-namespace FileManager\Traits;
+namespace Radionovel\FileManagerService\Traits;
 
-use FileManager\Exceptions\UploaderIsNullException;
-use FileManager\Interfaces\UploaderInterface;
+use Radionovel\FileManagerService\Exceptions\UploaderIsNullException;
+use Radionovel\FileManagerService\Interfaces\UploaderInterface;
 
 /**
  * Trait UseUploader

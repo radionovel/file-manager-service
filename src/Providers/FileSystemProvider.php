@@ -15,7 +15,7 @@ use Radionovel\FileManagerService\Traits\UseUploader;
  * Class FileSystemProvider
  * @package Providers
  */
-class FileSystemFileSystemProvider implements FileSystemProviderInterface
+class FileSystemProvider implements FileSystemProviderInterface
 {
     use PathUtils, UseDownloader, UseUploader;
     /**

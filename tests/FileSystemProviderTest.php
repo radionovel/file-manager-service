@@ -8,14 +8,14 @@ use Radionovel\FileManagerService\Exceptions\UploaderIsNullException;
 use Radionovel\FileManagerService\FsObjects\DirectoryObject;
 use Radionovel\FileManagerService\FsObjects\FileObject;
 use Radionovel\FileManagerService\Interfaces\FsObjectInterface;
-use Radionovel\FileManagerService\Providers\FileSystemFileSystemProvider;
+use Radionovel\FileManagerService\Providers\FileSystemProvider;
 use Radionovel\FileManagerService\Interfaces\UploaderInterface;
 use PHPUnit\Framework\TestCase;
 
 class FileSystemProviderTest extends TestCase
 {
     /**
-     * @var FileSystemFileSystemProvider
+     * @var FileSystemProvider
      */
     private $provider;
     /**
@@ -86,7 +86,7 @@ class FileSystemProviderTest extends TestCase
     protected function setUp(): void
     {
         $this->base_directory = static::getBaseDirectory();
-        $this->provider = new FileSystemFileSystemProvider($this->base_directory);
+        $this->provider = new FileSystemProvider($this->base_directory);
         parent::setUp();
     }
 

@@ -12,7 +12,7 @@
   "minimum-stability": "dev",
   "autoload": {
     "psr-4": {
-      "Radionovel\\FileManager\\": "src"
+      "Radionovel\\FileManagerService\\": "src/"
     }
   },
   "require": {},

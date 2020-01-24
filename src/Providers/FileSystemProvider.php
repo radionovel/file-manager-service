@@ -2,6 +2,8 @@
 
 namespace Radionovel\FileManagerService\Providers;
 
+use Exception;
+use Radionovel\FileManagerService\Exceptions\DownloaderIsNullException;
 use Radionovel\FileManagerService\Exceptions\InvalidPathException;
 use Radionovel\FileManagerService\Exceptions\PathNotExistsException;
 use Radionovel\FileManagerService\FsObjects\DirectoryObject;
@@ -184,9 +186,36 @@ class FileSystemProvider implements FileSystemProviderInterface
     {
         try {
             $this->getValidPath($path);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             return false;
         }
         return true;
+    }
+
+    /**
+     * @param $file
+     * @return mixed
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
+     * @throws DownloaderIsNullException
+     */
+    public function safeDownload($file)
+    {
+        $file = $this->getValidPath($file);
+        return $this->download($file);
+    }
+
+    /**
+     * @param $files
+     * @param $destination
+     * @return mixed
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
+     * @throws \Radionovel\FileManagerService\Exceptions\UploaderIsNullException
+     */
+    public function safeUpload($files, $destination)
+    {
+        $destination = $this->getValidPath($destination);
+        return $this->upload($files, $destination);
     }
 }

@@ -11,7 +11,8 @@ interface UploaderInterface
 {
     /**
      * @param $files
+     * @param $destination
      * @return mixed
      */
-    public function upload($files);
+    public function upload($files, $destination);
 }

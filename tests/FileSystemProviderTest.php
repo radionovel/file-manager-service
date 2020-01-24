@@ -43,6 +43,7 @@ class FileSystemProviderTest extends TestCase
         static::mkdir();
         static::mkdir('/folder1');
         static::mkdir('/folder1/subfolder2');
+        static::mkdir('/folder1/rename-folder');
         static::mkdir('/folder2');
 
         static::link('/tmp', '/folder1/symlink');
@@ -207,6 +208,17 @@ class FileSystemProviderTest extends TestCase
         $result = $this->provider->move('move-folder/test', '/');
         $this->assertTrue($result);
         $directory_exists = is_dir($this->base_directory . '/test');
+        $this->assertTrue($directory_exists);
+    }
+    /**
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
+     */
+    public function testRenameDirectory()
+    {
+        $result = $this->provider->rename('/folder1/rename-folder', 'new-name');
+        $this->assertTrue($result);
+        $directory_exists = is_dir($this->base_directory . '/folder1/new-name');
         $this->assertTrue($directory_exists);
     }
 

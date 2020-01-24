@@ -161,6 +161,23 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * @param $path
+     * @param $new_name
+     * @return bool
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
+     */
+    public function rename($path, $new_name)
+    {
+        $source = $this->getValidPath($path);
+        $path_array = explode(DIRECTORY_SEPARATOR, $source);
+        array_pop($path_array);
+        array_push($path_array, basename($new_name));
+        $destination = implode(DIRECTORY_SEPARATOR, $path_array);
+        return rename($source, $destination);
+    }
+
+    /**
+     * @param $path
      * @return bool
      */
     public function exists($path)

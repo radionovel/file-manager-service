@@ -74,6 +74,18 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * @param $path
+     * @return false|string
+     */
+    private function extractRelativePath($path)
+    {
+        if (strpos($path, $this->getBasePath()) === 0) {
+            return substr($path, strlen($this->getBasePath()));
+        }
+        return $path;
+    }
+
+    /**
+     * @param $path
      * @return array
      * @throws PathNotExistsException
      * @throws InvalidPathException
@@ -87,7 +99,7 @@ class FileSystemProvider implements FileSystemProviderInterface
             if (in_array($item, ['.', '..'])) {
                 continue;
             }
-            $item_path = $path . DIRECTORY_SEPARATOR . $item;
+            $item_path = $this->extractRelativePath($path . DIRECTORY_SEPARATOR . $item);
             if (is_dir($item_path)) {
                 $result[] = new DirectoryObject($item_path);
             } else {

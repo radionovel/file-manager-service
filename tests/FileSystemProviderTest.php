@@ -120,6 +120,17 @@ class FileSystemProviderTest extends TestCase
             }
         }
     }
+    public function testListingHaventBasepath()
+    {
+        $listing = $this->provider->listing('/');
+        $base_directory = static::getBaseDirectory();
+        foreach ($listing as $item) {
+            if ($item instanceof FsObjectInterface) {
+                $info = $item->info();
+                $this->assertStringStartsNotWith($base_directory, $info['path']);
+            }
+        }
+    }
 
     public function testInvalidPathException()
     {

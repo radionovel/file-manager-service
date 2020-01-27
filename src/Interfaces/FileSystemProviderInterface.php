@@ -8,21 +8,6 @@ namespace Radionovel\FileManagerService\Interfaces;
  */
 interface FileSystemProviderInterface
 {
-
-    /**
-     * Download file thought external downloader
-     * @param $file
-     * @return mixed
-     */
-    public function download($file);
-
-    /**
-     * Upload filer thought external uploader
-     * @param $files
-     * @return mixed
-     */
-    public function upload($files);
-
     /**
      * Create directory
      * @param $path

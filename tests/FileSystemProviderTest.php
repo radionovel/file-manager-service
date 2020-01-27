@@ -245,7 +245,7 @@ class FileSystemProviderTest extends TestCase
     public function testUploaderException()
     {
         $this->expectException(UploaderIsNullException::class);
-        $this->provider->upload([]);
+        $this->provider->upload([], '/path');
     }
 
     public function testUploader()
@@ -256,10 +256,10 @@ class FileSystemProviderTest extends TestCase
 
         $uploader->expects($this->once())
             ->method('upload')
-            ->with($this->equalTo([]));
+            ->with($this->equalTo([]), $this->equalTo('/path'));
 
         $this->provider->setUploader($uploader);
-        $this->provider->upload([]);
+        $this->provider->upload([], '/path');
     }
 
     public function validDirectoriesProvider()

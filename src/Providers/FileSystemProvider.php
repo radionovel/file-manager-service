@@ -101,8 +101,9 @@ class FileSystemProvider implements FileSystemProviderInterface
             if (in_array($item, ['.', '..'])) {
                 continue;
             }
-            $item_path = $this->extractRelativePath($path . DIRECTORY_SEPARATOR . $item);
-            if (is_dir($item_path)) {
+            $full_path = $path . DIRECTORY_SEPARATOR . $item;
+            $item_path = $this->extractRelativePath($full_path);
+            if (is_dir($full_path)) {
                 $result[] = new DirectoryObject($item_path);
             } else {
                 $result[] = new FileObject($item_path);

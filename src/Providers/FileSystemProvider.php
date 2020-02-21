@@ -106,7 +106,7 @@ class FileSystemProvider implements FileSystemProviderInterface
             if (is_dir($full_path)) {
                 $result[] = new DirectoryObject($item_path);
             } else {
-                $result[] = new FileObject($item_path);
+                $result[] = new FileObject($item_path, filesize($full_path));
             }
         }
         return $result;

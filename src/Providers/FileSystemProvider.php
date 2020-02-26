@@ -3,12 +3,15 @@
 namespace Radionovel\FileManagerService\Providers;
 
 use Exception;
+use Radionovel\FileManagerService\Exceptions\CreateDirectoryException;
 use Radionovel\FileManagerService\Exceptions\DownloaderIsNullException;
 use Radionovel\FileManagerService\Exceptions\InvalidPathException;
 use Radionovel\FileManagerService\Exceptions\PathNotExistsException;
+use Radionovel\FileManagerService\Exceptions\RenameException;
 use Radionovel\FileManagerService\FsObjects\DirectoryObject;
 use Radionovel\FileManagerService\FsObjects\FileObject;
 use Radionovel\FileManagerService\Interfaces\FileSystemProviderInterface;
+use Radionovel\FileManagerService\Interfaces\FsObjectInterface;
 use Radionovel\FileManagerService\Traits\PathUtils;
 use Radionovel\FileManagerService\Traits\UseDownloader;
 use Radionovel\FileManagerService\Traits\UseUploader;
@@ -114,21 +117,21 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * @param $path
-     * @return bool
+     * @return DirectoryObject
+     * @throws InvalidPathException
+     * @throws CreateDirectoryException
      */
     public function mkdir($path)
     {
-        try {
-            $path = $this->makeFullPath($path);
-        } catch (InvalidPathException $exception) {
-            return false;
+        $path = $this->makeFullPath($path);
+        $relative_path = $this->extractRelativePath($path);
+        if (mkdir($path)) {
+            return new DirectoryObject($relative_path);
         }
-        $command = escapeshellcmd(
-            sprintf('mkdir -p %s', $path)
-        );
-        system($command, $exit_code);
-        return $exit_code === 0;
 
+        throw new CreateDirectoryException(
+            sprintf('Cant create directory with path: %s', $relative_path)
+        );
     }
 
     /**
@@ -140,34 +143,58 @@ class FileSystemProvider implements FileSystemProviderInterface
     public function delete($path)
     {
         $path = $this->getValidPath($path);
-        $command = escapeshellcmd(
-            sprintf('rm -rf %s', $path)
-        );
-        system($command, $exit_code);
-        return $exit_code === 0;
+        if (is_dir($path)) {
+            $files = array_diff(scandir($path), array('.', '..'));
+            foreach ($files as $file) {
+                return $this->delete("$path/$file");
+            }
+            return rmdir($path);
+        }
+        return unlink($path);
     }
 
     /**
      * @param $source
      * @param $destination
-     * @return bool
+     * @return FsObjectInterface
      * @throws InvalidPathException
      * @throws PathNotExistsException
+     * @throws RenameException
      */
     public function move($source, $destination)
     {
         $source = $this->getValidPath($source);
         $destination = $this->getValidPath($destination);
         $destination = $destination . DIRECTORY_SEPARATOR . basename($source);
-        return rename($source, $destination);
+        return $this->renameObject($source, $destination);
+    }
+
+    /**
+     * @param $source
+     * @param $destination
+     * @return DirectoryObject|FileObject
+     * @throws RenameException
+     */
+    protected function renameObject($source, $destination)
+    {
+        $relative_path = $this->extractRelativePath($destination);
+        if (! rename($source, $destination)) {
+            throw new RenameException(
+                sprintf('Cant rename file or directory: %s', $relative_path)
+            );
+        }
+        return is_dir($destination)
+            ? new DirectoryObject($relative_path)
+            : new FileObject($relative_path);
     }
 
     /**
      * @param $path
      * @param $new_name
-     * @return bool
+     * @return DirectoryObject|FileObject
      * @throws InvalidPathException
      * @throws PathNotExistsException
+     * @throws RenameException
      */
     public function rename($path, $new_name)
     {
@@ -176,7 +203,7 @@ class FileSystemProvider implements FileSystemProviderInterface
         array_pop($path_array);
         array_push($path_array, basename($new_name));
         $destination = implode(DIRECTORY_SEPARATOR, $path_array);
-        return rename($source, $destination);
+        return $this->renameObject($source, $destination);
     }
 
     /**

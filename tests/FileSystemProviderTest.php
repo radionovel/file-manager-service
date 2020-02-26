@@ -1,5 +1,6 @@
 <?php
 
+use Radionovel\FileManagerService\Exceptions\CreateDirectoryException;
 use Radionovel\FileManagerService\Interfaces\DownloaderInterface;
 use Radionovel\FileManagerService\Exceptions\DownloaderIsNullException;
 use Radionovel\FileManagerService\Exceptions\InvalidPathException;
@@ -169,7 +170,7 @@ class FileSystemProviderTest extends TestCase
     public function testMakeDirectory($actual, $expected)
     {
         $result = $this->provider->mkdir($actual);
-        $this->assertTrue($result);
+        $this->assertTrue($result instanceof FsObjectInterface);
         $directory_exists = is_dir($this->base_directory . $expected);
         $this->assertTrue($directory_exists);
     }
@@ -177,6 +178,7 @@ class FileSystemProviderTest extends TestCase
 
     public function testMakeDirectoryError()
     {
+        $this->expectException(InvalidPathException::class);
         $result = $this->provider->mkdir('/../../folder');
         $this->assertFalse($result);
     }
@@ -206,7 +208,7 @@ class FileSystemProviderTest extends TestCase
         $folder = $this->base_directory . '/move-folder/test';
         mkdir($folder, 0777, true);
         $result = $this->provider->move('move-folder/test', '/');
-        $this->assertTrue($result);
+        $this->assertTrue($result instanceof FsObjectInterface);
         $directory_exists = is_dir($this->base_directory . '/test');
         $this->assertTrue($directory_exists);
     }
@@ -217,7 +219,7 @@ class FileSystemProviderTest extends TestCase
     public function testRenameDirectory()
     {
         $result = $this->provider->rename('/folder1/rename-folder', 'new-name');
-        $this->assertTrue($result);
+        $this->assertTrue($result instanceof FsObjectInterface);
         $directory_exists = is_dir($this->base_directory . '/folder1/new-name');
         $this->assertTrue($directory_exists);
     }
@@ -266,8 +268,7 @@ class FileSystemProviderTest extends TestCase
     {
         return [
             'without slash' => ['my-filder', '/my-filder'],
-            'with slash' => ['/my-test-filder', '/my-test-filder'],
-            'long path' => ['/some/path/to/folder', '/some/path/to/folder']
+            'with slash' => ['/my-test-filder', '/my-test-filder']
         ];
     }
 }

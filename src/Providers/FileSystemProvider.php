@@ -146,7 +146,8 @@ class FileSystemProvider implements FileSystemProviderInterface
         if (is_dir($path)) {
             $files = array_diff(scandir($path), array('.', '..'));
             foreach ($files as $file) {
-                return $this->delete("$path/$file");
+                $delete_path = $this->extractRelativePath("$path/$file");
+                $this->delete($delete_path);
             }
             return rmdir($path);
         }

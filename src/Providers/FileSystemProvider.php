@@ -3,6 +3,7 @@
 namespace Radionovel\FileManagerService\Providers;
 
 use Exception;
+use Radionovel\FileManagerService\Exceptions\CantDeleteException;
 use Radionovel\FileManagerService\Exceptions\CreateDirectoryException;
 use Radionovel\FileManagerService\Exceptions\DownloaderIsNullException;
 use Radionovel\FileManagerService\Exceptions\InvalidPathException;
@@ -139,6 +140,7 @@ class FileSystemProvider implements FileSystemProviderInterface
      * @return bool
      * @throws InvalidPathException
      * @throws PathNotExistsException
+     * @throws CantDeleteException
      */
     public function delete($path)
     {
@@ -147,7 +149,9 @@ class FileSystemProvider implements FileSystemProviderInterface
             $files = array_diff(scandir($path), array('.', '..'));
             foreach ($files as $file) {
                 $delete_path = $this->extractRelativePath("$path/$file");
-                $this->delete($delete_path);
+                if (! $this->delete($delete_path)) {
+                    throw new CantDeleteException();
+                }
             }
             return rmdir($path);
         }

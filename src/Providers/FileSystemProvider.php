@@ -11,6 +11,7 @@ use Radionovel\FileManagerService\Exceptions\PathNotExistsException;
 use Radionovel\FileManagerService\Exceptions\RenameException;
 use Radionovel\FileManagerService\FsObjects\DirectoryObject;
 use Radionovel\FileManagerService\FsObjects\FileObject;
+use Radionovel\FileManagerService\FsObjects\FileObjectFactory;
 use Radionovel\FileManagerService\Interfaces\FileSystemProviderInterface;
 use Radionovel\FileManagerService\Interfaces\FsObjectInterface;
 use Radionovel\FileManagerService\Traits\PathUtils;
@@ -107,11 +108,7 @@ class FileSystemProvider implements FileSystemProviderInterface
             }
             $full_path = $path . DIRECTORY_SEPARATOR . $item;
             $item_path = $this->extractRelativePath($full_path);
-            if (is_dir($full_path)) {
-                $result[] = new DirectoryObject($item_path);
-            } else {
-                $result[] = new FileObject($item_path, filesize($full_path));
-            }
+            $result[] = FileObjectFactory::make($full_path, $item_path);
         }
         return $result;
     }
@@ -127,7 +124,7 @@ class FileSystemProvider implements FileSystemProviderInterface
         $path = $this->makeFullPath($path);
         $relative_path = $this->extractRelativePath($path);
         if (mkdir($path)) {
-            return new DirectoryObject($relative_path);
+            return $result[] = FileObjectFactory::make($path, $relative_path);
         }
 
         throw new CreateDirectoryException(
@@ -173,14 +170,16 @@ class FileSystemProvider implements FileSystemProviderInterface
         if (is_dir($path)) {
             $files = array_diff(scandir($path), array('.', '..'));
             foreach ($files as $file) {
+                $full_path = $path . DIRECTORY_SEPARATOR . $file;
+                $item_path = $this->extractRelativePath($full_path);
                 if (strpos($file, $query) !== false) {
-                    $full_path = $path . DIRECTORY_SEPARATOR . $file;
-                    $item_path = $this->extractRelativePath($full_path);
-                    if (is_dir($full_path)) {
-                        $result[] = new DirectoryObject($item_path);
+                    $result[] = FileObjectFactory::make($full_path, $item_path);
+                }
+                if (is_dir($full_path)) {
+                    try {
                         $result = array_merge($result, $this->search($query, $item_path));
-                    } else {
-                        $result[] = new FileObject($item_path, filesize($full_path));
+                    } catch (\Exception $exception) {
+                        continue;
                     }
                 }
             }
@@ -218,9 +217,7 @@ class FileSystemProvider implements FileSystemProviderInterface
                 sprintf('Cant rename file or directory: %s', $relative_path)
             );
         }
-        return is_dir($destination)
-            ? new DirectoryObject($relative_path)
-            : new FileObject($relative_path);
+        return FileObjectFactory::make($destination, $relative_path);
     }
 
     /**

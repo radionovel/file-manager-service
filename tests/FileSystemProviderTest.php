@@ -1,17 +1,18 @@
 <?php
 
-use Radionovel\FileManagerService\Exceptions\CreateDirectoryException;
-use Radionovel\FileManagerService\Interfaces\DownloaderInterface;
+use PHPUnit\Framework\TestCase;
+use Radionovel\FileManagerService\Exceptions\CantDeleteException;
 use Radionovel\FileManagerService\Exceptions\DownloaderIsNullException;
 use Radionovel\FileManagerService\Exceptions\InvalidPathException;
 use Radionovel\FileManagerService\Exceptions\PathNotExistsException;
+use Radionovel\FileManagerService\Exceptions\RenameException;
 use Radionovel\FileManagerService\Exceptions\UploaderIsNullException;
 use Radionovel\FileManagerService\FsObjects\DirectoryObject;
 use Radionovel\FileManagerService\FsObjects\FileObject;
+use Radionovel\FileManagerService\Interfaces\DownloaderInterface;
 use Radionovel\FileManagerService\Interfaces\FsObjectInterface;
-use Radionovel\FileManagerService\Providers\FileSystemProvider;
 use Radionovel\FileManagerService\Interfaces\UploaderInterface;
-use PHPUnit\Framework\TestCase;
+use Radionovel\FileManagerService\Providers\FileSystemProvider;
 
 class FileSystemProviderTest extends TestCase
 {
@@ -24,9 +25,10 @@ class FileSystemProviderTest extends TestCase
      */
     private $base_directory;
 
-    public static function getBaseDirectory(): string
+    public static function setUpBeforeClass(): void
     {
-        return '/tmp' . DIRECTORY_SEPARATOR . crypt(__CLASS__, 11);
+        static::clear();
+        static::init();
     }
 
     protected static function clear()
@@ -38,6 +40,10 @@ class FileSystemProviderTest extends TestCase
         );
     }
 
+    public static function getBaseDirectory(): string
+    {
+        return '/tmp' . DIRECTORY_SEPARATOR . crypt(__CLASS__, 11);
+    }
 
     protected static function init()
     {
@@ -53,6 +59,14 @@ class FileSystemProviderTest extends TestCase
         static::touch('folder1/file2');
         static::touch('file1');
         static::touch('file2');
+    }
+
+    public static function mkdir($path = '')
+    {
+        $base_directory = static::getBaseDirectory();
+        system(
+            sprintf('mkdir -p %s%s', $base_directory, $path)
+        );
     }
 
     public static function link($from, $to)
@@ -71,25 +85,13 @@ class FileSystemProviderTest extends TestCase
         );
     }
 
-    public static function mkdir($path = '')
+    public function testSearch()
     {
-        $base_directory = static::getBaseDirectory();
-        system(
-            sprintf('mkdir -p %s%s', $base_directory, $path)
-        );
-    }
-
-    public static function setUpBeforeClass(): void
-    {
-        static::clear();
-        static::init();
-    }
-
-    protected function setUp(): void
-    {
-        $this->base_directory = static::getBaseDirectory();
-        $this->provider = new FileSystemProvider($this->base_directory);
-        parent::setUp();
+        $search_result = $this->provider->search('folder');
+        $this->assertIsArray($search_result);
+        foreach ($search_result as $item) {
+            $this->assertInstanceOf(FsObjectInterface::class, $item);
+        }
     }
 
     public function testProvider()
@@ -104,6 +106,10 @@ class FileSystemProviderTest extends TestCase
         $this->assertEquals('path/for/test', $path);
     }
 
+    /**
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
+     */
     public function testListingSuccess()
     {
         $listing = $this->provider->listing('/');
@@ -122,6 +128,7 @@ class FileSystemProviderTest extends TestCase
             }
         }
     }
+
     public function testListingHaventBasepath()
     {
         $listing = $this->provider->listing('/');
@@ -166,6 +173,7 @@ class FileSystemProviderTest extends TestCase
      * @param $actual
      * @param $expected
      * @throws InvalidPathException
+     * @throws \Radionovel\FileManagerService\Exceptions\CreateDirectoryException
      */
     public function testMakeDirectory($actual, $expected)
     {
@@ -174,7 +182,6 @@ class FileSystemProviderTest extends TestCase
         $directory_exists = is_dir($this->base_directory . $expected);
         $this->assertTrue($directory_exists);
     }
-
 
     public function testMakeDirectoryError()
     {
@@ -190,6 +197,7 @@ class FileSystemProviderTest extends TestCase
      * @param $expected
      * @throws InvalidPathException
      * @throws PathNotExistsException
+     * @throws CantDeleteException
      */
     public function testDeleteDirectory($actual, $expected)
     {
@@ -202,6 +210,7 @@ class FileSystemProviderTest extends TestCase
     /**
      * @throws InvalidPathException
      * @throws PathNotExistsException
+     * @throws RenameException
      */
     public function testMoveDirectory()
     {
@@ -212,9 +221,11 @@ class FileSystemProviderTest extends TestCase
         $directory_exists = is_dir($this->base_directory . '/test');
         $this->assertTrue($directory_exists);
     }
+
     /**
      * @throws InvalidPathException
      * @throws PathNotExistsException
+     * @throws RenameException
      */
     public function testRenameDirectory()
     {
@@ -270,5 +281,12 @@ class FileSystemProviderTest extends TestCase
             'without slash' => ['my-filder', '/my-filder'],
             'with slash' => ['/my-test-filder', '/my-test-filder']
         ];
+    }
+
+    protected function setUp(): void
+    {
+        $this->base_directory = static::getBaseDirectory();
+        $this->provider = new FileSystemProvider($this->base_directory);
+        parent::setUp();
     }
 }

@@ -58,7 +58,7 @@ class FileSystemProvider implements FileSystemProviderInterface
         $real_path = $this->realPath($path);
         if (strpos($real_path, $this->getBasePath()) !== 0) {
             throw new InvalidPathException(
-                sprintf('Path %s is not valid', $real_path)
+                sprintf('Path %s is not valid. Current base path %s', $real_path, $this->getBasePath())
             );
         }
         return $real_path;
@@ -156,6 +156,36 @@ class FileSystemProvider implements FileSystemProviderInterface
             return rmdir($path);
         }
         return unlink($path);
+    }
+
+    /**
+     * @param string $query
+     * @param string $path
+     * @return array
+     * @throws CantDeleteException
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
+     */
+    public function search($query, $path = '/')
+    {
+        $path = $this->getValidPath($path);
+        $result = [];
+        if (is_dir($path)) {
+            $files = array_diff(scandir($path), array('.', '..'));
+            foreach ($files as $file) {
+                if (strpos($file, $query) !== false) {
+                    $full_path = $path . DIRECTORY_SEPARATOR . $file;
+                    $item_path = $this->extractRelativePath($full_path);
+                    if (is_dir($full_path)) {
+                        $result[] = new DirectoryObject($item_path);
+                        $result = array_merge($result, $this->search($query, $item_path));
+                    } else {
+                        $result[] = new FileObject($item_path, filesize($full_path));
+                    }
+                }
+            }
+        }
+        return $result;
     }
 
     /**

@@ -26,13 +26,14 @@ trait UseUploader
     /**
      * @param $files
      * @param $destination
+     * @param $callback
      * @return mixed
      * @throws UploaderIsNullException
      */
-    public function upload($files, $destination)
+    public function upload($files, $destination, $callback = null)
     {
         if (!is_null($this->uploader)) {
-            return $this->uploader->upload($files, $destination);
+            return $this->uploader->upload($files, $destination, $callback);
         }
         throw new UploaderIsNullException('Uploader cant be null');
     }

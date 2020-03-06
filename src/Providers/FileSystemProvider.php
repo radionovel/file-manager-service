@@ -254,28 +254,30 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * @param $file
+     * @param null $callback
      * @return mixed
+     * @throws DownloaderIsNullException
      * @throws InvalidPathException
      * @throws PathNotExistsException
-     * @throws DownloaderIsNullException
      */
-    public function safeDownload($file)
+    public function safeDownload($file, $callback = null)
     {
         $file = $this->getValidPath($file);
-        return $this->download($file);
+        return $this->download($file, $callback);
     }
 
     /**
      * @param $files
      * @param $destination
+     * @param null $callback
      * @return mixed
      * @throws InvalidPathException
      * @throws PathNotExistsException
      * @throws \Radionovel\FileManagerService\Exceptions\UploaderIsNullException
      */
-    public function safeUpload($files, $destination)
+    public function safeUpload($files, $destination, $callback = null)
     {
         $destination = $this->getValidPath($destination);
-        return $this->upload($files, $destination);
+        return $this->upload($files, $destination, $callback);
     }
 }

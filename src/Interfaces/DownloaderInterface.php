@@ -10,7 +10,8 @@ interface DownloaderInterface
 {
     /**
      * @param $file
+     * @param $callback
      * @return mixed
      */
-    public function download($file);
+    public function download($file, $callback = null);
 }

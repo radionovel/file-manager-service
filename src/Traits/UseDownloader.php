@@ -17,13 +17,14 @@ trait UseDownloader
 
     /**
      * @param $file
+     * @param $callback
      * @return mixed
      * @throws DownloaderIsNullException
      */
-    public function download($file)
+    public function download($file, $callback = null)
     {
         if (!is_null($this->downloader)) {
-            return $this->downloader->download($file);
+            return $this->downloader->download($file, $callback);
         }
         throw new DownloaderIsNullException('Downloader cant be null');
     }

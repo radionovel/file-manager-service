@@ -12,7 +12,8 @@ interface UploaderInterface
     /**
      * @param $files
      * @param $destination
+     * @param $callback
      * @return mixed
      */
-    public function upload($files, $destination);
+    public function upload($files, $destination, $callback = null);
 }

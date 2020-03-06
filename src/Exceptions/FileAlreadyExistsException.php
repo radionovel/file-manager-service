@@ -6,9 +6,9 @@ namespace Radionovel\FileManagerService\Exceptions;
 use Exception;
 
 /**
- * Class InvalidPathException
+ * Class FileAlreadyExistsException
  * @package FileManager\Exceptions
  */
-class RenameException extends Exception
+class FileAlreadyExistsException extends Exception
 {
 }

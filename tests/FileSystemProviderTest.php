@@ -2,7 +2,9 @@
 
 use PHPUnit\Framework\TestCase;
 use Radionovel\FileManagerService\Exceptions\CantDeleteException;
+use Radionovel\FileManagerService\Exceptions\CreateDirectoryException;
 use Radionovel\FileManagerService\Exceptions\DownloaderIsNullException;
+use Radionovel\FileManagerService\Exceptions\FileAlreadyExistsException;
 use Radionovel\FileManagerService\Exceptions\InvalidPathException;
 use Radionovel\FileManagerService\Exceptions\PathNotExistsException;
 use Radionovel\FileManagerService\Exceptions\RenameException;
@@ -50,6 +52,7 @@ class FileSystemProviderTest extends TestCase
         static::mkdir();
         static::mkdir('/folder1');
         static::mkdir('/folder1/subfolder2');
+        static::mkdir('/folder1/some');
         static::mkdir('/folder1/rename-folder');
         static::mkdir('/folder2');
 
@@ -173,7 +176,7 @@ class FileSystemProviderTest extends TestCase
      * @param $actual
      * @param $expected
      * @throws InvalidPathException
-     * @throws \Radionovel\FileManagerService\Exceptions\CreateDirectoryException
+     * @throws CreateDirectoryException
      */
     public function testMakeDirectory($actual, $expected)
     {
@@ -230,9 +233,32 @@ class FileSystemProviderTest extends TestCase
     public function testRenameDirectory()
     {
         $result = $this->provider->rename('/folder1/rename-folder', 'new-name');
-        $this->assertTrue($result instanceof FsObjectInterface);
+        $this->assertTrue($result instanceof FsObjectInterface, 'Вернулся объект FsObjectInterface');
         $directory_exists = is_dir($this->base_directory . '/folder1/new-name');
-        $this->assertTrue($directory_exists);
+        $this->assertTrue($directory_exists, 'Папка успешно переименована');
+    }
+
+    /**
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
+     * @throws RenameException
+     * @depends testRenameDirectory
+     */
+    public function testRenameAlreadyExistsDirectory()
+    {
+        $this->expectException(FileAlreadyExistsException::class);
+        $this->provider->rename('/folder1/new-name', 'some');
+    }
+
+    /**
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
+     * @throws RenameException
+     */
+    public function testRenameBasePathDirectory()
+    {
+        $this->expectException(InvalidPathException::class);
+        $this->provider->rename('/', 'new-name');
     }
 
     public function testDownloader()

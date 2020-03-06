@@ -6,6 +6,7 @@ use Exception;
 use Radionovel\FileManagerService\Exceptions\CantDeleteException;
 use Radionovel\FileManagerService\Exceptions\CreateDirectoryException;
 use Radionovel\FileManagerService\Exceptions\DownloaderIsNullException;
+use Radionovel\FileManagerService\Exceptions\FileAlreadyExistsException;
 use Radionovel\FileManagerService\Exceptions\InvalidPathException;
 use Radionovel\FileManagerService\Exceptions\PathNotExistsException;
 use Radionovel\FileManagerService\Exceptions\RenameException;
@@ -115,6 +116,20 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * @param $path
+     * @return bool
+     * @throws FileAlreadyExistsException
+     */
+    protected function checkEmptyPath ($path) {
+        try {
+            $this->realPath($path);
+        } catch (Exception $exception) {
+            return true;
+        }
+        throw new FileAlreadyExistsException();
+    }
+
+    /**
+     * @param $path
      * @return DirectoryObject
      * @throws InvalidPathException
      * @throws CreateDirectoryException
@@ -122,6 +137,7 @@ class FileSystemProvider implements FileSystemProviderInterface
     public function mkdir($path)
     {
         $path = $this->makeFullPath($path);
+        $this->checkEmptyPath($path);
         $relative_path = $this->extractRelativePath($path);
         if (mkdir($path)) {
             return $result[] = FileObjectFactory::make($path, $relative_path);
@@ -159,7 +175,6 @@ class FileSystemProvider implements FileSystemProviderInterface
      * @param string $query
      * @param string $path
      * @return array
-     * @throws CantDeleteException
      * @throws InvalidPathException
      * @throws PathNotExistsException
      */
@@ -207,10 +222,17 @@ class FileSystemProvider implements FileSystemProviderInterface
      * @param $source
      * @param $destination
      * @return DirectoryObject|FileObject
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
      * @throws RenameException
+     * @throws FileAlreadyExistsException
      */
     protected function renameObject($source, $destination)
     {
+        if ($this->realPath($source) === $this->getBasePath()) {
+            throw new InvalidPathException('Cant rename or move root directory');
+        }
+        $this->checkEmptyPath($destination);
         $relative_path = $this->extractRelativePath($destination);
         if (! rename($source, $destination)) {
             throw new RenameException(
@@ -227,6 +249,7 @@ class FileSystemProvider implements FileSystemProviderInterface
      * @throws InvalidPathException
      * @throws PathNotExistsException
      * @throws RenameException
+     * @throws FileAlreadyExistsException
      */
     public function rename($path, $new_name)
     {

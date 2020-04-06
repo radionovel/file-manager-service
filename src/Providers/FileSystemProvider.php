@@ -109,7 +109,9 @@ class FileSystemProvider implements FileSystemProviderInterface
             }
             $full_path = $path . DIRECTORY_SEPARATOR . $item;
             $item_path = $this->extractRelativePath($full_path);
-            $result[] = FileObjectFactory::make($full_path, $item_path);
+            $item = FileObjectFactory::make($full_path, $item_path);
+            $item->setModifyTime(filemtime($full_path));
+            $result[] = $item;
         }
         return $result;
     }

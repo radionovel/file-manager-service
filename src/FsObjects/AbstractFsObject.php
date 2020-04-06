@@ -20,6 +20,11 @@ class AbstractFsObject
     protected $path;
 
     /**
+     * @var int
+     */
+    protected $modifyTime;
+
+    /**
      * AbstractFsObject constructor.
      * @param $path
      */
@@ -27,6 +32,7 @@ class AbstractFsObject
     {
         $this->name = basename($path);
         $this->path = $path;
+        $this->modifyTime = 0;
     }
 
     /**
@@ -45,7 +51,6 @@ class AbstractFsObject
         return $this->path;
     }
 
-
     /**
      * @return array
      */
@@ -54,7 +59,24 @@ class AbstractFsObject
         return [
             'name' => $this->getName(),
             'path' => $this->getPath(),
-            'type' => static::TYPE
+            'type' => static::TYPE,
+            'modify_time' => $this->getModifyTime()
         ];
+    }
+
+    /**
+     * @return int
+     */
+    public function getModifyTime (): int
+    {
+        return $this->modifyTime;
+    }
+
+    /**
+     * @param int $modifyTime
+     */
+    public function setModifyTime ($modifyTime): void
+    {
+        $this->modifyTime = $modifyTime;
     }
 }

@@ -26,6 +26,7 @@ use Radionovel\FileManagerService\Traits\UseUploader;
 class FileSystemProvider implements FileSystemProviderInterface
 {
     use PathUtils, UseDownloader, UseUploader;
+
     /**
      * @var string
      */
@@ -118,10 +119,28 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * @param $path
+     * @return bool|DirectoryObject|FileObject
+     */
+    public function getInfo($path)
+    {
+        try {
+            $path = $this->getValidPath($path);
+            $item_path = $this->extractRelativePath($path);
+            $item = FileObjectFactory::make($path, $item_path);
+            $item->setModifyTime(filemtime($path));
+            return $item;
+        } catch (\Exception $exception) {
+            return false;
+        }
+    }
+
+    /**
+     * @param $path
      * @return bool
      * @throws FileAlreadyExistsException
      */
-    protected function checkEmptyPath ($path) {
+    protected function checkEmptyPath($path)
+    {
         try {
             $this->realPath($path);
         } catch (Exception $exception) {

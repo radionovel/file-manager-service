@@ -88,6 +88,12 @@ class FileSystemProviderTest extends TestCase
         );
     }
 
+    public function testGetInfo()
+    {
+        $file_info = $this->provider->getInfo('/file1');
+        $this->assertInstanceOf(FileObject::class, $file_info);
+    }
+    
     public function testSearch()
     {
         $search_result = $this->provider->search('folder');

@@ -18,6 +18,10 @@ class AbstractFsObject
      * @var
      */
     protected $path;
+    /**
+     * @var int
+     */
+    protected $size = 0;
 
     /**
      * @var int
@@ -52,24 +56,31 @@ class AbstractFsObject
     }
 
     /**
+     * @return int
+     */
+    public function getSize(): int
+    {
+        return $this->size;
+    }
+
+    /**
+     * @return int
+     */
+    public function getModifyTime(): int
+    {
+        return $this->modifyTime;
+    }
+
+    /**
      * @return array
      */
-    public function info()
-    {
+    public function info() {
         return [
             'name' => $this->getName(),
             'path' => $this->getPath(),
             'type' => static::TYPE,
             'modify_time' => $this->getModifyTime()
         ];
-    }
-
-    /**
-     * @return int
-     */
-    public function getModifyTime (): int
-    {
-        return $this->modifyTime;
     }
 
     /**

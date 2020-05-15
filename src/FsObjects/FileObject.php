@@ -12,7 +12,6 @@ class FileObject extends AbstractFsObject implements FsObjectInterface
 {
     public const TYPE = 'file';
 
-    protected $size = 0;
     private $sizeFormat = '%s %s';
 
     /**

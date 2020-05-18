@@ -18,9 +18,8 @@ class FileObjectFactory
     {
         if (is_dir($absolute_path)) {
             return new DirectoryObject($relative_path);
-        } else if (file_exists($absolute_path)) {
-            return new FileObject($relative_path, filesize($absolute_path));
         }
-        throw new PathNotExistsException(sprintf('Path %s not exists', $relative_path));
+
+        return new FileObject($relative_path, filesize($absolute_path));
     }
 }

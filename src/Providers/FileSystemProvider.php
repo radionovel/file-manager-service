@@ -279,6 +279,11 @@ class FileSystemProvider implements FileSystemProviderInterface
         if ($this->realPath($source) === $this->getBasePath()) {
             throw new InvalidPathException('Cant rename or move root directory');
         }
+
+        if (is_dir($source) && is_dir($destination) && strpos($this->realPath($destination), $this->realPath($source)) !== false) {
+            throw new InvalidPathException('Cant rename or move');
+        }
+
         try {
             $this->checkEmptyPath($destination);
         } catch (FileAlreadyExistsException $ex) {
@@ -307,6 +312,15 @@ class FileSystemProvider implements FileSystemProviderInterface
         if ($this->realPath($source) === $this->getBasePath()) {
             throw new InvalidPathException('Cant copy root directory');
         }
+
+        if ($this->realPath($destination) === $this->realPath($source)) {
+            $overwrite = false;
+            $rename = true;
+        }else if (is_dir($source) && is_dir($destination) && strpos($this->realPath($destination), $this->realPath($source)) !== false
+        ) {
+            throw new InvalidPathException('Cant rename or move');
+        }
+
         try {
             $this->checkEmptyPath($destination);
         } catch (FileAlreadyExistsException $ex) {
@@ -329,7 +343,7 @@ class FileSystemProvider implements FileSystemProviderInterface
         }
         return FileObjectFactory::make($destination, $relative_path);
     }
-    
+
     /**
      * @param $path
      * @param int $attempt

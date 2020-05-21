@@ -280,6 +280,11 @@ class FileSystemProvider implements FileSystemProviderInterface
             throw new InvalidPathException('Cant rename or move root directory');
         }
 
+        if ($source === $destination) {
+            $relative_path = $this->extractRelativePath($destination);
+            return FileObjectFactory::make($destination, $relative_path);
+        }
+
         if (is_dir($source) && is_dir($destination) && strpos($this->realPath($destination), $this->realPath($source)) !== false) {
             throw new InvalidPathException('Cant rename or move');
         }

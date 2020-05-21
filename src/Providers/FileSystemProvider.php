@@ -226,34 +226,54 @@ class FileSystemProvider implements FileSystemProviderInterface
     /**
      * @param $source
      * @param $destination
+     * @param bool $overwrite
+     * @param bool $rename
      * @return FsObjectInterface
+     * @throws FileAlreadyExistsException
      * @throws InvalidPathException
      * @throws PathNotExistsException
      * @throws RenameException
      */
-    public function move($source, $destination)
+    public function move($source, $destination, $overwrite = false, $rename = false)
     {
         $source = $this->getValidPath($source);
         $destination = $this->getValidPath($destination);
         $destination = $destination . DIRECTORY_SEPARATOR . basename($source);
-        return $this->renameObject($source, $destination);
+        return $this->renameObject($source, $destination, $overwrite, $rename);
     }
 
     /**
      * @param $source
      * @param $destination
+     * @param $overwrite
+     * @param $rename
      * @return DirectoryObject|FileObject
+     * @throws FileAlreadyExistsException
      * @throws InvalidPathException
      * @throws PathNotExistsException
      * @throws RenameException
-     * @throws FileAlreadyExistsException
+     * @throws CantDeleteException
      */
-    protected function renameObject($source, $destination)
+    protected function renameObject($source, $destination, $overwrite = false, $rename = false)
     {
         if ($this->realPath($source) === $this->getBasePath()) {
             throw new InvalidPathException('Cant rename or move root directory');
         }
-        $this->checkEmptyPath($destination);
+        try {
+            $this->checkEmptyPath($destination);
+        } catch (FileAlreadyExistsException $ex) {
+            if ($overwrite) {
+                $this->delete(
+                    $this->extractRelativePath($destination)
+                );
+            } else if ($rename) {
+                $destination = $this->makeUniqueName($destination);
+                echo $destination;
+            } else {
+                throw new FileAlreadyExistsException();
+            }
+        }
+
         $relative_path = $this->extractRelativePath($destination);
         if (! rename($source, $destination)) {
             throw new RenameException(
@@ -261,6 +281,27 @@ class FileSystemProvider implements FileSystemProviderInterface
             );
         }
         return FileObjectFactory::make($destination, $relative_path);
+    }
+
+    /**
+     * @param $path
+     * @param int $attempt
+     * @return mixed
+     */
+    private function makeUniqueName($path, $attempt = 0)
+    {
+        try {
+            if ($attempt > 0) {
+                $path_info = pathinfo($path);
+                $check_path = sprintf('%s/%s (%s).%s', $path_info['dirname'], $path_info['filename'], $attempt, $path_info['extension']);
+            } else {
+                $check_path = $path;
+            }
+            $this->checkEmptyPath($check_path);
+        } catch (FileAlreadyExistsException $exception) {
+            return $this->makeUniqueName($path, $attempt + 1);
+        }
+        return $check_path;
     }
 
     /**

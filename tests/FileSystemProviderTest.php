@@ -51,6 +51,7 @@ class FileSystemProviderTest extends TestCase
     {
         static::mkdir();
         static::mkdir('/folder1');
+        static::mkdir('/folder1/test');
         static::mkdir('/folder1/subfolder2');
         static::mkdir('/folder1/some');
         static::mkdir('/folder1/rename-folder');
@@ -60,6 +61,14 @@ class FileSystemProviderTest extends TestCase
 
         static::touch('folder1/file1');
         static::touch('folder1/file2');
+
+        static::touch('folder1/move.txt');
+        static::touch('folder1/rename.txt');
+        static::touch('folder1/test/move.txt');
+        static::touch('folder1/test/rename.txt');
+        static::touch('folder1/test/rename\ \(1\).txt');
+        static::touch('folder1/test/rename\ \(2\).txt');
+
         static::touch('file1');
         static::touch('file2');
     }
@@ -88,12 +97,35 @@ class FileSystemProviderTest extends TestCase
         );
     }
 
+    public function testMoveWithOverwrite()
+    {
+        $this->provider->move(
+            '/folder1/move.txt',
+            '/folder1/test',
+            true
+        );
+        $info = $this->provider->getInfo('/folder1/move.txt');
+        $this->assertFalse($info);
+    }
+
+    public function testMoveWithRename()
+    {
+        $this->provider->move(
+            'folder1/rename.txt',
+            'folder1/test',
+            false,
+            true
+        );
+        $info = $this->provider->getInfo('/folder1/test/rename (3).txt');
+        $this->assertNotFalse($info);
+    }
+
     public function testGetInfo()
     {
         $file_info = $this->provider->getInfo('/file1');
         $this->assertInstanceOf(FileObject::class, $file_info);
     }
-    
+
     public function testSearch()
     {
         $search_result = $this->provider->search('folder');

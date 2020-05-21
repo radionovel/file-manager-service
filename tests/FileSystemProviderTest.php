@@ -64,6 +64,7 @@ class FileSystemProviderTest extends TestCase
 
         static::touch('folder1/move.txt');
         static::touch('folder1/rename.txt');
+        static::touch('folder1/copy.txt');
         static::touch('folder1/test/move.txt');
         static::touch('folder1/test/rename.txt');
         static::touch('folder1/test/rename\ \(1\).txt');
@@ -117,6 +118,13 @@ class FileSystemProviderTest extends TestCase
             true
         );
         $info = $this->provider->getInfo('/folder1/test/rename (3).txt');
+        $this->assertNotFalse($info);
+    }
+
+    public function testCopy()
+    {
+        $this->provider->move('folder1/copy.txt', 'folder1/test');
+        $info = $this->provider->getInfo('/folder1/test/copy.txt');
         $this->assertNotFalse($info);
     }
 

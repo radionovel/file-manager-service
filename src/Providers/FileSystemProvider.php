@@ -245,6 +245,26 @@ class FileSystemProvider implements FileSystemProviderInterface
     /**
      * @param $source
      * @param $destination
+     * @param bool $overwrite
+     * @param bool $rename
+     * @return DirectoryObject|FileObject
+     * @throws CantDeleteException
+     * @throws FileAlreadyExistsException
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
+     * @throws RenameException
+     */
+    public function copy($source, $destination, $overwrite = false, $rename = false)
+    {
+        $source = $this->getValidPath($source);
+        $destination = $this->getValidPath($destination);
+        $destination = $destination . DIRECTORY_SEPARATOR . basename($source);
+        return $this->copyObject($source, $destination, $overwrite, $rename);
+    }
+
+    /**
+     * @param $source
+     * @param $destination
      * @param $overwrite
      * @param $rename
      * @return DirectoryObject|FileObject
@@ -283,6 +303,35 @@ class FileSystemProvider implements FileSystemProviderInterface
         return FileObjectFactory::make($destination, $relative_path);
     }
 
+    protected function copyObject($source, $destination, $overwrite = false, $rename = false)
+    {
+        if ($this->realPath($source) === $this->getBasePath()) {
+            throw new InvalidPathException('Cant copy root directory');
+        }
+        try {
+            $this->checkEmptyPath($destination);
+        } catch (FileAlreadyExistsException $ex) {
+            if ($overwrite) {
+                $this->delete(
+                    $this->extractRelativePath($destination)
+                );
+            } else if ($rename) {
+                $destination = $this->makeUniqueName($destination);
+                echo $destination;
+            } else {
+                throw new FileAlreadyExistsException();
+            }
+        }
+
+        $relative_path = $this->extractRelativePath($destination);
+        if (! copy($source, $destination)) {
+            throw new RenameException(
+                sprintf('Cant copy file or directory: %s', $relative_path)
+            );
+        }
+        return FileObjectFactory::make($destination, $relative_path);
+    }
+    
     /**
      * @param $path
      * @param int $attempt

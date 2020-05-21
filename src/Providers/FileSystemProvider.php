@@ -288,7 +288,6 @@ class FileSystemProvider implements FileSystemProviderInterface
                 );
             } else if ($rename) {
                 $destination = $this->makeUniqueName($destination);
-                echo $destination;
             } else {
                 throw new FileAlreadyExistsException();
             }
@@ -317,7 +316,6 @@ class FileSystemProvider implements FileSystemProviderInterface
                 );
             } else if ($rename) {
                 $destination = $this->makeUniqueName($destination);
-                echo $destination;
             } else {
                 throw new FileAlreadyExistsException();
             }

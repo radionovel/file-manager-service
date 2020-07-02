@@ -312,6 +312,18 @@ class FileSystemProvider implements FileSystemProviderInterface
         return FileObjectFactory::make($destination, $relative_path);
     }
 
+    /**
+     * @param $source
+     * @param $destination
+     * @param bool $overwrite
+     * @param bool $rename
+     * @return DirectoryObject|FileObject
+     * @throws CantDeleteException
+     * @throws FileAlreadyExistsException
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
+     * @throws RenameException
+     */
     protected function copyObject($source, $destination, $overwrite = false, $rename = false)
     {
         if ($this->realPath($source) === $this->getBasePath()) {
@@ -340,12 +352,27 @@ class FileSystemProvider implements FileSystemProviderInterface
         }
 
         $relative_path = $this->extractRelativePath($destination);
-        if (! copy($source, $destination)) {
-            throw new RenameException(
-                sprintf('Cant copy file or directory: %s', $relative_path)
-            );
-        }
+        $this->copyRecursive($source, $destination);
         return FileObjectFactory::make($destination, $relative_path);
+    }
+
+    /**
+     * @param $source
+     * @param $destination
+     */
+    private function copyRecursive($source, $destination)
+    {
+        if (is_dir($source)) {
+            mkdir($destination);
+            $files = scandir($source);
+            foreach ($files as $file) {
+                if ($file != "." && $file != "..") {
+                    $this->copyRecursive("$source/$file", "$destination/$file");
+                }
+            }
+        } elseif (file_exists($source)) {
+            copy($source, $destination);
+        }
     }
 
     /**

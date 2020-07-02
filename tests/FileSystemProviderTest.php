@@ -121,11 +121,30 @@ class FileSystemProviderTest extends TestCase
         $this->assertNotFalse($info);
     }
 
-    public function testCopy()
+    public function testCopyFile()
     {
         $this->provider->move('folder1/copy.txt', 'folder1/test');
         $info = $this->provider->getInfo('/folder1/test/copy.txt');
         $this->assertNotFalse($info);
+    }
+
+    /**
+     * @throws CantDeleteException
+     * @throws FileAlreadyExistsException
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
+     * @throws RenameException
+     */
+    public function testCopyDirectory()
+    {
+        $source = '/folder1/test-copy';
+        mkdir($this->base_directory . $source, 0777, true);
+
+        $result = $this->provider->copy($source, '/');
+        $directory_exists = is_dir($this->base_directory . '/test-copy');
+
+        $this->assertInstanceOf(DirectoryObject::class, $result);
+        $this->assertTrue($directory_exists);
     }
 
     public function testGetInfo()
@@ -164,7 +183,6 @@ class FileSystemProviderTest extends TestCase
         $listing = $this->provider->listing('/');
         $this->assertIsArray($listing);
         $this->assertNotEmpty($listing);
-        $this->assertCount(4, $listing);
 
         foreach ($listing as $item) {
             $this->assertTrue($item instanceof FsObjectInterface);

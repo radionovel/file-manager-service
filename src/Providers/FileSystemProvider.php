@@ -215,7 +215,7 @@ class FileSystemProvider implements FileSystemProviderInterface
             foreach ($files as $file) {
                 $full_path = $path . DIRECTORY_SEPARATOR . $file;
                 $item_path = $this->extractRelativePath($full_path);
-                if (strpos($file, $query) !== false) {
+                if (strpos(strtoupper($file), strtoupper($query)) !== false) {
                     $result[] = FileObjectFactory::make($full_path, $item_path);
                 }
                 if (is_dir($full_path)) {

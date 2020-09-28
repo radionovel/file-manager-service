@@ -10,6 +10,7 @@ use Radionovel\FileManagerService\Exceptions\FileAlreadyExistsException;
 use Radionovel\FileManagerService\Exceptions\InvalidPathException;
 use Radionovel\FileManagerService\Exceptions\PathNotExistsException;
 use Radionovel\FileManagerService\Exceptions\RenameException;
+use Radionovel\FileManagerService\Exceptions\UploaderIsNullException;
 use Radionovel\FileManagerService\FsObjects\DirectoryObject;
 use Radionovel\FileManagerService\FsObjects\FileObject;
 use Radionovel\FileManagerService\FsObjects\FileObjectFactory;
@@ -129,7 +130,7 @@ class FileSystemProvider implements FileSystemProviderInterface
             $item = FileObjectFactory::make($path, $item_path);
             $item->setModifyTime(filemtime($path));
             return $item;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             return false;
         }
     }
@@ -160,7 +161,7 @@ class FileSystemProvider implements FileSystemProviderInterface
         $path = $this->makeFullPath($path);
         $this->checkEmptyPath($path);
         $relative_path = $this->extractRelativePath($path);
-        if (mkdir($path)) {
+        if (@mkdir($path)) {
             return $result[] = FileObjectFactory::make($path, $relative_path);
         }
 
@@ -214,7 +215,7 @@ class FileSystemProvider implements FileSystemProviderInterface
                 if (is_dir($full_path)) {
                     try {
                         $result = array_merge($result, $this->search($query, $item_path));
-                    } catch (\Exception $exception) {
+                    } catch (Exception $exception) {
                         continue;
                     }
                 }
@@ -363,7 +364,7 @@ class FileSystemProvider implements FileSystemProviderInterface
     private function copyRecursive($source, $destination)
     {
         if (is_dir($source)) {
-            mkdir($destination);
+            @mkdir($destination);
             $files = scandir($source);
             foreach ($files as $file) {
                 if ($file != "." && $file != "..") {
@@ -450,7 +451,7 @@ class FileSystemProvider implements FileSystemProviderInterface
      * @return mixed
      * @throws InvalidPathException
      * @throws PathNotExistsException
-     * @throws \Radionovel\FileManagerService\Exceptions\UploaderIsNullException
+     * @throws UploaderIsNullException
      */
     public function safeUpload($files, $destination, $callback = null)
     {

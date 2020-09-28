@@ -28,6 +28,10 @@ class FileSystemProvider implements FileSystemProviderInterface
 {
     use PathUtils, UseDownloader, UseUploader;
 
+    const MOVE_OPERATION_NONE = 1;
+    const MOVE_OPERATION_RENAME = 2;
+    const MOVE_OPERATION_OVERWRITE = 3;
+
     /**
      * @var string
      */
@@ -153,8 +157,10 @@ class FileSystemProvider implements FileSystemProviderInterface
     /**
      * @param $path
      * @return DirectoryObject
-     * @throws InvalidPathException
      * @throws CreateDirectoryException
+     * @throws FileAlreadyExistsException
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
      */
     public function mkdir($path)
     {
@@ -227,27 +233,44 @@ class FileSystemProvider implements FileSystemProviderInterface
     /**
      * @param $source
      * @param $destination
-     * @param bool $overwrite
-     * @param bool $rename
+     * @param int $move_operation
      * @return FsObjectInterface
+     * @throws CantDeleteException
      * @throws FileAlreadyExistsException
      * @throws InvalidPathException
      * @throws PathNotExistsException
      * @throws RenameException
      */
-    public function move($source, $destination, $overwrite = false, $rename = false)
+    public function move($source, $destination, $move_operation = self::MOVE_OPERATION_NONE)
     {
         $source = $this->getValidPath($source);
         $destination = $this->getValidPath($destination);
         $destination = $destination . DIRECTORY_SEPARATOR . basename($source);
-        return $this->renameObject($source, $destination, $overwrite, $rename);
+        return $this->renameObject($source, $destination, $move_operation);
     }
 
     /**
      * @param $source
      * @param $destination
-     * @param bool $overwrite
-     * @param bool $rename
+     * @param int $move_operation
+     * @return DirectoryObject|FileObject
+     * @throws CantDeleteException
+     * @throws FileAlreadyExistsException
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
+     */
+    public function copy($source, $destination, $move_operation = self::MOVE_OPERATION_NONE)
+    {
+        $source = $this->getValidPath($source);
+        $destination = $this->getValidPath($destination);
+        $destination = $destination . DIRECTORY_SEPARATOR . basename($source);
+        return $this->copyObject($source, $destination, $move_operation);
+    }
+
+    /**
+     * @param $source
+     * @param $destination
+     * @param $move_operation
      * @return DirectoryObject|FileObject
      * @throws CantDeleteException
      * @throws FileAlreadyExistsException
@@ -255,27 +278,7 @@ class FileSystemProvider implements FileSystemProviderInterface
      * @throws PathNotExistsException
      * @throws RenameException
      */
-    public function copy($source, $destination, $overwrite = false, $rename = false)
-    {
-        $source = $this->getValidPath($source);
-        $destination = $this->getValidPath($destination);
-        $destination = $destination . DIRECTORY_SEPARATOR . basename($source);
-        return $this->copyObject($source, $destination, $overwrite, $rename);
-    }
-
-    /**
-     * @param $source
-     * @param $destination
-     * @param $overwrite
-     * @param $rename
-     * @return DirectoryObject|FileObject
-     * @throws FileAlreadyExistsException
-     * @throws InvalidPathException
-     * @throws PathNotExistsException
-     * @throws RenameException
-     * @throws CantDeleteException
-     */
-    protected function renameObject($source, $destination, $overwrite = false, $rename = false)
+    protected function renameObject($source, $destination, $move_operation)
     {
         if ($this->realPath($source) === $this->getBasePath()) {
             throw new InvalidPathException('Cant rename or move root directory');
@@ -293,11 +296,9 @@ class FileSystemProvider implements FileSystemProviderInterface
         try {
             $this->checkEmptyPath($destination);
         } catch (FileAlreadyExistsException $ex) {
-            if ($overwrite) {
-                $this->delete(
-                    $this->extractRelativePath($destination)
-                );
-            } else if ($rename) {
+            if ($move_operation === self::MOVE_OPERATION_OVERWRITE) {
+                $this->delete($this->extractRelativePath($destination));
+            } else if ($move_operation === self::MOVE_OPERATION_RENAME) {
                 $destination = $this->makeUniqueName($destination);
             } else {
                 throw new FileAlreadyExistsException();
@@ -316,36 +317,31 @@ class FileSystemProvider implements FileSystemProviderInterface
     /**
      * @param $source
      * @param $destination
-     * @param bool $overwrite
-     * @param bool $rename
+     * @param $move_operation
      * @return DirectoryObject|FileObject
      * @throws CantDeleteException
      * @throws FileAlreadyExistsException
      * @throws InvalidPathException
      * @throws PathNotExistsException
-     * @throws RenameException
      */
-    protected function copyObject($source, $destination, $overwrite = false, $rename = false)
+    protected function copyObject($source, $destination, $move_operation)
     {
         if ($this->realPath($source) === $this->getBasePath()) {
             throw new InvalidPathException('Cant copy root directory');
         }
 
         if ($destination === $this->realPath($source)) {
-            $overwrite = false;
-            $rename = true;
-        }else if (is_dir($source) && strpos($destination, $this->realPath($source)) !== false) {
+            $move_operation = self::MOVE_OPERATION_RENAME;
+        } else if (is_dir($source) && strpos($destination, $this->realPath($source)) !== false) {
             throw new InvalidPathException('Cant rename or move');
         }
 
         try {
             $this->checkEmptyPath($destination);
         } catch (FileAlreadyExistsException $ex) {
-            if ($overwrite) {
-                $this->delete(
-                    $this->extractRelativePath($destination)
-                );
-            } else if ($rename) {
+            if ($move_operation === self::MOVE_OPERATION_OVERWRITE) {
+                $this->delete($this->extractRelativePath($destination));
+            } else if ($move_operation === self::MOVE_OPERATION_RENAME) {
                 $destination = $this->makeUniqueName($destination);
             } else {
                 throw new FileAlreadyExistsException();
@@ -401,10 +397,11 @@ class FileSystemProvider implements FileSystemProviderInterface
      * @param $path
      * @param $new_name
      * @return DirectoryObject|FileObject
+     * @throws CantDeleteException
+     * @throws FileAlreadyExistsException
      * @throws InvalidPathException
      * @throws PathNotExistsException
      * @throws RenameException
-     * @throws FileAlreadyExistsException
      */
     public function rename($path, $new_name)
     {
@@ -413,7 +410,7 @@ class FileSystemProvider implements FileSystemProviderInterface
         array_pop($path_array);
         array_push($path_array, basename($new_name));
         $destination = implode(DIRECTORY_SEPARATOR, $path_array);
-        return $this->renameObject($source, $destination);
+        return $this->renameObject($source, $destination, self::MOVE_OPERATION_NONE);
     }
 
     /**

@@ -170,8 +170,8 @@ class FileSystemProviderTest extends TestCase
 
     public function testSanitizePath()
     {
-        $path = $this->provider->sanitize('///path/for/test///');
-        $this->assertEquals('path/for/test', $path);
+        $path = $this->provider->sanitize('/path/for/test/');
+        $this->assertEquals('/path/for/test', $path);
     }
 
     /**

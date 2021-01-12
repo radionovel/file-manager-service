@@ -43,7 +43,7 @@ class FileSystemProvider implements FileSystemProviderInterface
      */
     public function __construct($base_path)
     {
-        $this->basePath = DIRECTORY_SEPARATOR . $this->sanitize($base_path);
+        $this->basePath = $this->sanitize($base_path);
     }
 
     /**

@@ -2,7 +2,6 @@
 
 namespace Radionovel\FileManagerService\Traits;
 
-use Radionovel\FileManagerService\Exceptions\InvalidPathException;
 use Radionovel\FileManagerService\Exceptions\PathNotExistsException;
 
 /**
@@ -17,7 +16,7 @@ trait PathUtils {
      */
     public function sanitize($path)
     {
-        return trim($path, '/');
+        return rtrim($path, '/');
     }
 
     /**

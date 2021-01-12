@@ -1,8 +1,6 @@
 <?php
 namespace Radionovel\FileManagerService\FsObjects;
 
-use Radionovel\FileManagerService\Exceptions\PathNotExistsException;
-
 /**
  * Class FileObjectFactory
  */
@@ -12,7 +10,6 @@ class FileObjectFactory
      * @param $absolute_path
      * @param $relative_path
      * @return DirectoryObject|FileObject
-     * @throws PathNotExistsException
      */
     public static function make($absolute_path, $relative_path)
     {

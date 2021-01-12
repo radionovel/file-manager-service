@@ -1,4 +1,5 @@
 <?php
+
 namespace Radionovel\FileManagerService\FsObjects;
 
 /**

@@ -47,6 +47,14 @@ class AbstractFsObject
         return $this->name;
     }
 
+    /*
+    * Тип объекта
+    */
+    public function getType()
+    {
+        return static::TYPE;
+    }
+
     /**
      * @return mixed
      */

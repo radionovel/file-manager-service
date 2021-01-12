@@ -2,7 +2,7 @@
   "name": "radionovel/file-manager-service",
   "license": "Apache-1.0",
   "type": "library",
-  "description": "",
+  "description": "File service provider",
   "authors": [
     {
       "name": "Andrey Radionov",

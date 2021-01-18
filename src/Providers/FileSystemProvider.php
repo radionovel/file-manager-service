@@ -382,8 +382,8 @@ class FileSystemProvider implements FileSystemProviderInterface
         try {
             if ($attempt > 0) {
                 $path_info = pathinfo($path);
-                $extension = isset($path_info['extension']) ? '.' . $path_info['extension']: '';
-                $check_path = sprintf('%s%s%s (%s).%s',
+                $extension = isset($path_info['extension']) && strlen($path_info['extension']) > 0 ? '.' . $path_info['extension']: '';
+                $check_path = sprintf('%s%s%s (%s)%s',
                     $path_info['dirname'], DIRECTORY_SEPARATOR, $path_info['filename'], $attempt, $extension);
 
             } else {

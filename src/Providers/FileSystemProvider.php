@@ -395,7 +395,10 @@ class FileSystemProvider implements FileSystemProviderInterface
         try {
             if ($attempt > 0) {
                 $path_info = pathinfo($path);
-                $check_path = sprintf('%s/%s (%s).%s', $path_info['dirname'], $path_info['filename'], $attempt, $path_info['extension']);
+                $extension = isset($path_info['extension']) && strlen($path_info['extension']) > 0 ? '.' . $path_info['extension']: '';
+                $check_path = sprintf('%s%s%s (%s)%s',
+                    $path_info['dirname'], DIRECTORY_SEPARATOR, $path_info['filename'], $attempt, $extension);
+
             } else {
                 $check_path = $path;
             }

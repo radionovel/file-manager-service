@@ -22,6 +22,7 @@ use Radionovel\FileManagerService\Traits\UseUploader;
 
 /**
  * Class FileSystemProvider
+ *
  * @package Providers
  */
 class FileSystemProvider implements FileSystemProviderInterface
@@ -39,6 +40,7 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * FileSystemProvider constructor.
+     *
      * @param $base_path
      */
     public function __construct($base_path)
@@ -56,6 +58,7 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * @param $path
+     *
      * @return string
      * @throws PathNotExistsException
      * @throws InvalidPathException
@@ -74,6 +77,7 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * @param $path
+     *
      * @return string
      * @throws InvalidPathException
      */
@@ -88,6 +92,7 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * @param $path
+     *
      * @return false|string
      */
     private function extractRelativePath($path)
@@ -100,6 +105,7 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * @param $path
+     *
      * @return array
      * @throws PathNotExistsException
      * @throws InvalidPathException
@@ -124,6 +130,7 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * @param $path
+     *
      * @return bool|DirectoryObject|FileObject
      */
     public function getInfo($path)
@@ -141,6 +148,7 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * @param $path
+     *
      * @return bool
      * @throws FileAlreadyExistsException
      */
@@ -156,6 +164,7 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * @param $path
+     *
      * @return DirectoryObject
      * @throws CreateDirectoryException
      * @throws FileAlreadyExistsException
@@ -178,6 +187,7 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * @param $path
+     *
      * @return bool
      * @throws InvalidPathException
      * @throws PathNotExistsException
@@ -199,41 +209,60 @@ class FileSystemProvider implements FileSystemProviderInterface
         return unlink($path);
     }
 
+    private function createFileObject($directory, $file_name)
+    {
+        $full_path = $directory . DIRECTORY_SEPARATOR . $file_name;
+        $item_path = $this->extractRelativePath($full_path);
+        return FileObjectFactory::make($full_path, $item_path);
+    }
+
     /**
-     * @param string $query
-     * @param string $path
+     * @param string $filter
+     * @param string $directory
+     *
      * @return array
      * @throws InvalidPathException
      * @throws PathNotExistsException
      */
-    public function search($query, $path = '/')
+    public function search($filter, $directory = '/')
     {
-        $path = $this->getValidPath($path);
-        $result = [];
-        if (is_dir($path)) {
-            $files = array_diff(scandir($path), array('.', '..'));
-            foreach ($files as $file) {
-                $full_path = $path . DIRECTORY_SEPARATOR . $file;
-                $item_path = $this->extractRelativePath($full_path);
-                if (strpos(strtoupper($file), strtoupper($query)) !== false) {
-                    $result[] = FileObjectFactory::make($full_path, $item_path);
-                }
-                if (is_dir($full_path)) {
-                    try {
-                        $result = array_merge($result, $this->search($query, $item_path));
-                    } catch (Exception $exception) {
-                        continue;
-                    }
-                }
-            }
+        try {
+            $directory = $this->getValidPath($directory);
+        } catch (\Exception $exception) {
+            return [];
         }
+
+        if (! is_dir($directory)) {
+            return [];
+        }
+
+        if (! $filter instanceof FilterInterface) {
+            $filter = FilterFactory::create([
+                'name' => $filter
+            ]);
+        }
+
+        $result = [];
+        $files = array_diff(scandir($directory), array('.', '..'));
+        foreach ($files as $file) {
+            $full_path = $directory . DIRECTORY_SEPARATOR . $file;
+            $item_path = $this->extractRelativePath($full_path);
+            $item = FileObjectFactory::make($full_path, $item_path);
+
+            if ($filter->filtered($item)) {
+                $result[] = $item;
+            }
+            $result = array_merge($result, $this->search($filter, $item_path));
+        }
+
         return $result;
     }
 
     /**
-     * @param $source
-     * @param $destination
+     * @param     $source
+     * @param     $destination
      * @param int $move_operation
+     *
      * @return FsObjectInterface
      * @throws CantDeleteException
      * @throws FileAlreadyExistsException
@@ -250,9 +279,10 @@ class FileSystemProvider implements FileSystemProviderInterface
     }
 
     /**
-     * @param $source
-     * @param $destination
+     * @param     $source
+     * @param     $destination
      * @param int $move_operation
+     *
      * @return DirectoryObject|FileObject
      * @throws CantDeleteException
      * @throws FileAlreadyExistsException
@@ -271,6 +301,7 @@ class FileSystemProvider implements FileSystemProviderInterface
      * @param $source
      * @param $destination
      * @param $move_operation
+     *
      * @return DirectoryObject|FileObject
      * @throws CantDeleteException
      * @throws FileAlreadyExistsException
@@ -318,6 +349,7 @@ class FileSystemProvider implements FileSystemProviderInterface
      * @param $source
      * @param $destination
      * @param $move_operation
+     *
      * @return DirectoryObject|FileObject
      * @throws CantDeleteException
      * @throws FileAlreadyExistsException
@@ -373,8 +405,9 @@ class FileSystemProvider implements FileSystemProviderInterface
     }
 
     /**
-     * @param $path
+     * @param     $path
      * @param int $attempt
+     *
      * @return mixed
      */
     private function makeUniqueName($path, $attempt = 0)
@@ -382,7 +415,7 @@ class FileSystemProvider implements FileSystemProviderInterface
         try {
             if ($attempt > 0) {
                 $path_info = pathinfo($path);
-                $extension = isset($path_info['extension']) && strlen($path_info['extension']) > 0 ? '.' . $path_info['extension']: '';
+                $extension = isset($path_info['extension']) && strlen($path_info['extension']) > 0 ? '.' . $path_info['extension'] : '';
                 $check_path = sprintf('%s%s%s (%s)%s',
                     $path_info['dirname'], DIRECTORY_SEPARATOR, $path_info['filename'], $attempt, $extension);
 
@@ -399,6 +432,7 @@ class FileSystemProvider implements FileSystemProviderInterface
     /**
      * @param $path
      * @param $new_name
+     *
      * @return DirectoryObject|FileObject
      * @throws CantDeleteException
      * @throws FileAlreadyExistsException
@@ -418,6 +452,7 @@ class FileSystemProvider implements FileSystemProviderInterface
 
     /**
      * @param $path
+     *
      * @return bool
      */
     public function exists($path)
@@ -431,8 +466,9 @@ class FileSystemProvider implements FileSystemProviderInterface
     }
 
     /**
-     * @param $file
+     * @param      $file
      * @param null $callback
+     *
      * @return mixed
      * @throws DownloaderIsNullException
      * @throws InvalidPathException
@@ -445,9 +481,10 @@ class FileSystemProvider implements FileSystemProviderInterface
     }
 
     /**
-     * @param $files
-     * @param $destination
+     * @param      $files
+     * @param      $destination
      * @param null $callback
+     *
      * @return mixed
      * @throws InvalidPathException
      * @throws PathNotExistsException

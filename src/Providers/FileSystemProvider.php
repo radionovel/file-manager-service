@@ -11,6 +11,8 @@ use Radionovel\FileManagerService\Exceptions\InvalidPathException;
 use Radionovel\FileManagerService\Exceptions\PathNotExistsException;
 use Radionovel\FileManagerService\Exceptions\RenameException;
 use Radionovel\FileManagerService\Exceptions\UploaderIsNullException;
+use Radionovel\FileManagerService\Filters\FilterFactory;
+use Radionovel\FileManagerService\Filters\FilterInterface;
 use Radionovel\FileManagerService\FsObjects\DirectoryObject;
 use Radionovel\FileManagerService\FsObjects\FileObject;
 use Radionovel\FileManagerService\FsObjects\FileObjectFactory;
@@ -19,6 +21,7 @@ use Radionovel\FileManagerService\Interfaces\FsObjectInterface;
 use Radionovel\FileManagerService\Traits\PathUtils;
 use Radionovel\FileManagerService\Traits\UseDownloader;
 use Radionovel\FileManagerService\Traits\UseUploader;
+use RuntimeException;
 
 /**
  * Class FileSystemProvider
@@ -190,7 +193,7 @@ class FileSystemProvider implements FileSystemProviderInterface
             $files = array_diff(scandir($path), array('.', '..'));
             foreach ($files as $file) {
                 $delete_path = $this->extractRelativePath("$path/$file");
-                if (! $this->delete($delete_path)) {
+                if (!$this->delete($delete_path)) {
                     throw new CantDeleteException();
                 }
             }
@@ -198,6 +201,7 @@ class FileSystemProvider implements FileSystemProviderInterface
         }
         return unlink($path);
     }
+
 
     /**
      * @param string $query
@@ -208,24 +212,33 @@ class FileSystemProvider implements FileSystemProviderInterface
      */
     public function search($query, $path = '/')
     {
-        $path = $this->getValidPath($path);
+        try {
+            $path = $this->getValidPath($path);
+        } catch (Exception $exception) {
+            return [];
+        }
+
+        if (!is_dir($path)) {
+            return [];
+        }
+
+        if (is_string($query)) {
+            $filter = FilterFactory::create(['name' => $query]);
+        } elseif ($query instanceof FilterInterface) {
+            $filter = $query;
+        } else {
+            throw new RuntimeException();
+        }
+
         $result = [];
-        if (is_dir($path)) {
-            $files = array_diff(scandir($path), array('.', '..'));
-            foreach ($files as $file) {
-                $full_path = $path . DIRECTORY_SEPARATOR . $file;
-                $item_path = $this->extractRelativePath($full_path);
-                if (strpos(strtoupper($file), strtoupper($query)) !== false) {
-                    $result[] = FileObjectFactory::make($full_path, $item_path);
-                }
-                if (is_dir($full_path)) {
-                    try {
-                        $result = array_merge($result, $this->search($query, $item_path));
-                    } catch (Exception $exception) {
-                        continue;
-                    }
-                }
+        $files = array_diff(scandir($path), array('.', '..'));
+        foreach ($files as $file) {
+            $full_path = $path . DIRECTORY_SEPARATOR . $file;
+            $item_path = $this->extractRelativePath($full_path);
+            if ($filter->filtered($full_path)) {
+                $result[] = FileObjectFactory::make($full_path, $item_path);
             }
+            $result = array_merge($result, $this->search($query, $item_path));
         }
         return $result;
     }
@@ -306,7 +319,7 @@ class FileSystemProvider implements FileSystemProviderInterface
         }
 
         $relative_path = $this->extractRelativePath($destination);
-        if (! rename($source, $destination)) {
+        if (!rename($source, $destination)) {
             throw new RenameException(
                 sprintf('Cant rename file or directory: %s', $relative_path)
             );

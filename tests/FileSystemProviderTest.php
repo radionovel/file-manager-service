@@ -51,6 +51,7 @@ class FileSystemProviderTest extends TestCase
     {
         static::mkdir();
         static::mkdir('/folder1');
+        static::mkdir('/is-directory');
         static::mkdir('/folder1/test');
         static::mkdir('/folder1/subfolder2');
         static::mkdir('/folder1/some');
@@ -59,6 +60,7 @@ class FileSystemProviderTest extends TestCase
 
         static::link('/tmp', '/folder1/symlink');
 
+        static::touch('is-not-directory');
         static::touch('folder1/file1');
         static::touch('folder1/file2');
 
@@ -114,8 +116,7 @@ class FileSystemProviderTest extends TestCase
         $this->provider->move(
             'folder1/rename.txt',
             'folder1/test',
-            false,
-            true
+            FileSystemProvider::MOVE_OPERATION_NONE
         );
         $info = $this->provider->getInfo('/folder1/test/rename (3).txt');
         $this->assertNotFalse($info);
@@ -378,5 +379,11 @@ class FileSystemProviderTest extends TestCase
         $this->base_directory = static::getBaseDirectory();
         $this->provider = new FileSystemProvider($this->base_directory);
         parent::setUp();
+    }
+
+    public function testIsDirectory()
+    {
+        $this->assertTrue($this->provider->isDirectory('/is-directory'));
+        $this->assertFalse($this->provider->isDirectory('/is-not-directory'));
     }
 }

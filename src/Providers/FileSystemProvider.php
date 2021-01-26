@@ -11,6 +11,7 @@ use Radionovel\FileManagerService\Exceptions\InvalidPathException;
 use Radionovel\FileManagerService\Exceptions\PathNotExistsException;
 use Radionovel\FileManagerService\Exceptions\RenameException;
 use Radionovel\FileManagerService\Exceptions\UploaderIsNullException;
+use Radionovel\FileManagerService\Filters\FilterInterface;
 use Radionovel\FileManagerService\FsObjects\DirectoryObject;
 use Radionovel\FileManagerService\FsObjects\FileObject;
 use Radionovel\FileManagerService\FsObjects\FileObjectFactory;
@@ -217,7 +218,7 @@ class FileSystemProvider implements FileSystemProviderInterface
     }
 
     /**
-     * @param string $filter
+     * @param string|FilterInterface $filter
      * @param string $directory
      *
      * @return array
@@ -494,5 +495,17 @@ class FileSystemProvider implements FileSystemProviderInterface
     {
         $destination = $this->getValidPath($destination);
         return $this->upload($files, $destination, $callback);
+    }
+
+    /**
+     * @param string $target
+     *
+     * @return bool
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
+     */
+    public function isDirectory(string $target)
+    {
+        return is_dir($this->getValidPath($target));
     }
 }

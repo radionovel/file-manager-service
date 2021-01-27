@@ -13,6 +13,7 @@ use Radionovel\FileManagerService\Exceptions\RenameException;
 use Radionovel\FileManagerService\Exceptions\UploaderIsNullException;
 use Radionovel\FileManagerService\Filters\FilterFactory;
 use Radionovel\FileManagerService\Filters\FilterInterface;
+use Radionovel\FileManagerService\FsObjects\AbstractFsObject;
 use Radionovel\FileManagerService\FsObjects\DirectoryObject;
 use Radionovel\FileManagerService\FsObjects\FileObject;
 use Radionovel\FileManagerService\FsObjects\FileObjectFactory;
@@ -203,7 +204,7 @@ class FileSystemProvider implements FileSystemProviderInterface
             $files = array_diff(scandir($path), array('.', '..'));
             foreach ($files as $file) {
                 $delete_path = $this->extractRelativePath("$path/$file");
-                if (!$this->delete($delete_path)) {
+                if (! $this->delete($delete_path)) {
                     throw new CantDeleteException();
                 }
             }
@@ -212,23 +213,15 @@ class FileSystemProvider implements FileSystemProviderInterface
         return unlink($path);
     }
 
-
-    private function createFileObject($directory, $file_name)
-    {
-        $full_path = $directory . DIRECTORY_SEPARATOR . $file_name;
-        $item_path = $this->extractRelativePath($full_path);
-        return FileObjectFactory::make($full_path, $item_path);
-    }
-
     /**
      * @param string|FilterInterface $filter
-     * @param string $directory
+     * @param string                 $path
      *
      * @return array
      * @throws InvalidPathException
      * @throws PathNotExistsException
      */
-    public function search($query, $path = '/')
+    public function search($filter, $path = '/')
     {
         try {
             $path = $this->getValidPath($path);
@@ -236,15 +229,13 @@ class FileSystemProvider implements FileSystemProviderInterface
             return [];
         }
 
-        if (!is_dir($path)) {
+        if (! is_dir($path)) {
             return [];
         }
 
-        if (is_string($query)) {
-            $filter = FilterFactory::create(['name' => $query]);
-        } elseif ($query instanceof FilterInterface) {
-            $filter = $query;
-        } else {
+        if (is_string($filter)) {
+            $filter = FilterFactory::create(['name' => $filter]);
+        } elseif (! $filter instanceof FilterInterface) {
             throw new RuntimeException();
         }
 
@@ -256,7 +247,7 @@ class FileSystemProvider implements FileSystemProviderInterface
             if ($filter->filtered($full_path)) {
                 $result[] = FileObjectFactory::make($full_path, $item_path);
             }
-            $result = array_merge($result, $this->search($query, $item_path));
+            $result = array_merge($result, $this->search($filter, $item_path));
         }
 
         return $result;
@@ -510,5 +501,18 @@ class FileSystemProvider implements FileSystemProviderInterface
     public function isDirectory(string $target)
     {
         return is_dir($this->getValidPath($target));
+    }
+
+    /**
+     * @param string $target
+     *
+     * @return AbstractFsObject
+     * @throws InvalidPathException
+     * @throws PathNotExistsException
+     */
+    public function createObject(string $target): AbstractFsObject
+    {
+        $valid_path = $this->getValidPath($target);
+        return FileObjectFactory::make($valid_path, $target);
     }
 }

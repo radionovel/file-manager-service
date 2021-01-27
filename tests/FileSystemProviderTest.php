@@ -9,6 +9,7 @@ use Radionovel\FileManagerService\Exceptions\InvalidPathException;
 use Radionovel\FileManagerService\Exceptions\PathNotExistsException;
 use Radionovel\FileManagerService\Exceptions\RenameException;
 use Radionovel\FileManagerService\Exceptions\UploaderIsNullException;
+use Radionovel\FileManagerService\FsObjects\AbstractFsObject;
 use Radionovel\FileManagerService\FsObjects\DirectoryObject;
 use Radionovel\FileManagerService\FsObjects\FileObject;
 use Radionovel\FileManagerService\Interfaces\DownloaderInterface;
@@ -238,8 +239,10 @@ class FileSystemProviderTest extends TestCase
 
     /**
      * @dataProvider validDirectoriesProvider
+     *
      * @param $actual
      * @param $expected
+     *
      * @throws InvalidPathException
      * @throws CreateDirectoryException
      */
@@ -261,8 +264,10 @@ class FileSystemProviderTest extends TestCase
     /**
      * @depends      testMakeDirectory
      * @dataProvider validDirectoriesProvider
+     *
      * @param $actual
      * @param $expected
+     *
      * @throws InvalidPathException
      * @throws PathNotExistsException
      * @throws CantDeleteException
@@ -329,12 +334,12 @@ class FileSystemProviderTest extends TestCase
     public function testDownloader()
     {
         $downloader = $this->getMockBuilder(DownloaderInterface::class)
-            ->onlyMethods(['download'])
-            ->getMock();
+                           ->onlyMethods(['download'])
+                           ->getMock();
 
         $downloader->expects($this->once())
-            ->method('download')
-            ->with($this->equalTo([]));
+                   ->method('download')
+                   ->with($this->equalTo([]));
 
         $this->provider->setDownloader($downloader);
         $this->provider->download([]);
@@ -355,12 +360,12 @@ class FileSystemProviderTest extends TestCase
     public function testUploader()
     {
         $uploader = $this->getMockBuilder(UploaderInterface::class)
-            ->onlyMethods(['upload'])
-            ->getMock();
+                         ->onlyMethods(['upload'])
+                         ->getMock();
 
         $uploader->expects($this->once())
-            ->method('upload')
-            ->with($this->equalTo([]), $this->equalTo('/path'));
+                 ->method('upload')
+                 ->with($this->equalTo([]), $this->equalTo('/path'));
 
         $this->provider->setUploader($uploader);
         $this->provider->upload([], '/path');
@@ -385,5 +390,12 @@ class FileSystemProviderTest extends TestCase
     {
         $this->assertTrue($this->provider->isDirectory('/is-directory'));
         $this->assertFalse($this->provider->isDirectory('/is-not-directory'));
+    }
+
+    public function testCreateObject()
+    {
+        $object = $this->provider->createObject('/is-directory');
+        $this->assertInstanceOf(AbstractFsObject::class, $object);
+        $this->assertEquals('is-directory', $object->getName());
     }
 }
